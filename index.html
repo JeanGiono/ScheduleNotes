@@ -3,267 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>專業行程管理工具</title>
+    <title>行程管理工具</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
         <!-- Header -->
-        <header class="app-header">
-            <div class="header-left">
-                <button class="btn btn--secondary sidebar-toggle" id="sidebarToggle">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                    </svg>
-                </button>
+        <header class="header">
+            <div class="header-content">
                 <h1 class="app-title">行程管理工具</h1>
-            </div>
-            
-            <div class="header-center">
-                <div class="view-selector">
-                    <button class="btn btn--outline view-btn" data-view="day">日</button>
-                    <button class="btn btn--outline view-btn" data-view="week">週</button>
-                    <button class="btn btn--outline view-btn active" data-view="month">月</button>
-                    <button class="btn btn--outline view-btn" data-view="year">年</button>
+                <div class="header-controls">
+                    <button class="btn btn--secondary theme-toggle" id="themeToggle" aria-label="切換主題">
+                        🌙
+                    </button>
+                    <button class="btn btn--primary" id="addEventBtn">新增事件</button>
                 </div>
-            </div>
-            
-            <div class="header-right">
-                <button class="btn btn--secondary" id="themeToggle">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42m12.72-12.72l1.42-1.42"></path>
-                    </svg>
-                </button>
-                <button class="btn btn--primary" id="addEventBtn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    新增行程
-                </button>
             </div>
         </header>
 
-        <div class="app-body">
-            <!-- Sidebar -->
-            <aside class="sidebar" id="sidebar">
-                <div class="sidebar-content">
-                    <!-- Mini Calendar -->
-                    <div class="mini-calendar-container">
-                        <div class="mini-calendar-header">
-                            <button class="btn btn--secondary btn--sm" id="miniPrevMonth">‹</button>
-                            <span id="miniMonthYear"></span>
-                            <button class="btn btn--secondary btn--sm" id="miniNextMonth">›</button>
-                        </div>
-                        <div class="mini-calendar" id="miniCalendar"></div>
-                    </div>
-
-                    <!-- Search -->
-                    <div class="search-section">
-                        <h3>搜尋行程</h3>
-                        <input type="text" class="form-control" id="searchInput" placeholder="搜尋事件...">
-                    </div>
-
-                    <!-- Filters -->
-                    <div class="filter-section">
-                        <h3>篩選器</h3>
-                        <div class="filter-group">
-                            <label class="form-label">顏色標籤</label>
-                            <div class="color-filters" id="colorFilters"></div>
-                        </div>
-                        <div class="filter-group">
-                            <label class="form-label">事件類型</label>
-                            <select class="form-control" id="typeFilter">
-                                <option value="">所有類型</option>
-                                <option value="work">工作</option>
-                                <option value="personal">個人</option>
-                                <option value="holiday">假期</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Import/Export -->
-                    <div class="import-export-section">
-                        <h3>資料管理</h3>
-                        <button class="btn btn--outline btn--full-width" id="importBtn">匯入 ICS</button>
-                        <input type="file" id="importFile" accept=".ics" style="display: none;">
-                        <button class="btn btn--outline btn--full-width" id="exportBtn">匯出 ICS</button>
-                        <button class="btn btn--outline btn--full-width" id="backupBtn">備份資料</button>
-                        <button class="btn btn--outline btn--full-width" id="restoreBtn">還原資料</button>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Main Content -->
-            <main class="main-content">
-                <div class="calendar-navigation">
-                    <button class="btn btn--secondary" id="prevPeriod">‹</button>
-                    <h2 id="currentPeriod"></h2>
-                    <button class="btn btn--secondary" id="nextPeriod">›</button>
-                    <button class="btn btn--outline" id="todayBtn">今天</button>
-                </div>
-
-                <div class="calendar-container">
-                    <!-- Month View -->
-                    <div class="calendar-view month-view" id="monthView">
-                        <div class="weekdays">
-                            <div class="weekday">日</div>
-                            <div class="weekday">一</div>
-                            <div class="weekday">二</div>
-                            <div class="weekday">三</div>
-                            <div class="weekday">四</div>
-                            <div class="weekday">五</div>
-                            <div class="weekday">六</div>
-                        </div>
-                        <div class="calendar-grid" id="calendarGrid"></div>
-                    </div>
-
-                    <!-- Week View -->
-                    <div class="calendar-view week-view hidden" id="weekView">
-                        <div class="week-header" id="weekHeader"></div>
-                        <div class="week-body" id="weekBody"></div>
-                    </div>
-
-                    <!-- Day View -->
-                    <div class="calendar-view day-view hidden" id="dayView">
-                        <div class="day-header" id="dayHeader"></div>
-                        <div class="day-body" id="dayBody"></div>
-                    </div>
-
-                    <!-- Year View -->
-                    <div class="calendar-view year-view hidden" id="yearView">
-                        <div class="year-grid" id="yearGrid"></div>
-                    </div>
-                </div>
-            </main>
-        </div>
-
-        <!-- Event Modal -->
-        <div class="modal-overlay" id="eventModal">
-            <div class="modal">
-                <div class="modal-header">
-                    <h3 id="modalTitle">新增行程</h3>
-                    <button class="btn btn--secondary" id="closeModal">×</button>
-                </div>
-                <div class="modal-body">
-                    <form id="eventForm">
-                        <div class="form-group">
-                            <label class="form-label">標題</label>
-                            <input type="text" class="form-control" id="eventTitle" required>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">開始日期</label>
-                                <input type="date" class="form-control" id="eventStartDate" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">開始時間</label>
-                                <input type="time" class="form-control" id="eventStartTime">
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">結束日期</label>
-                                <input type="date" class="form-control" id="eventEndDate">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">結束時間</label>
-                                <input type="time" class="form-control" id="eventEndTime">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">描述</label>
-                            <textarea class="form-control" id="eventDescription" rows="3"></textarea>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">顏色標籤</label>
-                                <select class="form-control" id="eventColor">
-                                    <option value="blue">藍色</option>
-                                    <option value="green">綠色</option>
-                                    <option value="yellow">黃色</option>
-                                    <option value="purple">紫色</option>
-                                    <option value="red">紅色</option>
-                                    <option value="orange">橙色</option>
-                                    <option value="pink">粉色</option>
-                                    <option value="teal">青色</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">事件類型</label>
-                                <select class="form-control" id="eventType">
-                                    <option value="work">工作</option>
-                                    <option value="personal">個人</option>
-                                    <option value="holiday">假期</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">重複設定</label>
-                            <select class="form-control" id="eventRepeat">
-                                <option value="none">不重複</option>
-                                <option value="daily">每日</option>
-                                <option value="weekly">每週</option>
-                                <option value="monthly">每月</option>
-                                <option value="yearly">每年</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">
-                                <input type="checkbox" id="eventAllDay"> 全天事件
-                            </label>
-                        </div>
-                        
-                        <div class="modal-actions">
-                            <button type="button" class="btn btn--secondary" id="cancelBtn">取消</button>
-                            <button type="button" class="btn btn--error" id="deleteBtn" style="display: none;">刪除</button>
-                            <button type="submit" class="btn btn--primary" id="saveBtn">儲存</button>
-                        </div>
-                    </form>
-                </div>
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <div class="nav-controls">
+                <button class="btn btn--outline nav-btn" id="prevBtn">&lt;</button>
+                <button class="btn btn--outline nav-btn" id="todayBtn">今天</button>
+                <button class="btn btn--outline nav-btn" id="nextBtn">&gt;</button>
             </div>
-        </div>
+            <h2 class="current-date" id="currentDate"></h2>
+            <div class="view-controls">
+                <button class="btn btn--secondary view-btn active" data-view="month">月</button>
+                <button class="btn btn--secondary view-btn" data-view="week">週</button>
+                <button class="btn btn--secondary view-btn" data-view="day">日</button>
+                <button class="btn btn--secondary view-btn" data-view="year">年</button>
+            </div>
+        </nav>
 
-        <!-- Quick Add Modal -->
-        <div class="modal-overlay" id="quickAddModal">
-            <div class="modal modal--small">
-                <div class="modal-header">
-                    <h3>快速新增</h3>
-                    <button class="btn btn--secondary" id="closeQuickModal">×</button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" class="form-control" id="quickEventTitle" placeholder="快速輸入事件標題..." autofocus>
-                    <div class="quick-actions">
-                        <button class="btn btn--primary btn--full-width" id="quickSaveBtn">新增</button>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3>搜索</h3>
+                <input type="text" class="form-control" id="searchInput" placeholder="搜索事件...">
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>篩選</h3>
+                <select class="form-control" id="filterSelect">
+                    <option value="">所有事件</option>
+                    <option value="工作">工作</option>
+                    <option value="個人">個人</option>
+                    <option value="假期">假期</option>
+                </select>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>顏色標籤</h3>
+                <div class="color-filters" id="colorFilters">
+                    <div class="color-filter" data-color="blue">
+                        <div class="color-dot color-blue"></div>
+                        <span>藍色</span>
+                    </div>
+                    <div class="color-filter" data-color="green">
+                        <div class="color-dot color-green"></div>
+                        <span>綠色</span>
+                    </div>
+                    <div class="color-filter" data-color="yellow">
+                        <div class="color-dot color-yellow"></div>
+                        <span>黃色</span>
+                    </div>
+                    <div class="color-filter" data-color="purple">
+                        <div class="color-dot color-purple"></div>
+                        <span>紫色</span>
+                    </div>
+                    <div class="color-filter" data-color="red">
+                        <div class="color-dot color-red"></div>
+                        <span>紅色</span>
+                    </div>
+                    <div class="color-filter" data-color="orange">
+                        <div class="color-dot color-orange"></div>
+                        <span>橙色</span>
+                    </div>
+                    <div class="color-filter" data-color="pink">
+                        <div class="color-dot color-pink"></div>
+                        <span>粉色</span>
+                    </div>
+                    <div class="color-filter" data-color="teal">
+                        <div class="color-dot color-teal"></div>
+                        <span>青色</span>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Context Menu -->
-        <div class="context-menu" id="contextMenu">
-            <div class="context-menu-item" id="editEvent">編輯</div>
-            <div class="context-menu-item" id="deleteEvent">刪除</div>
-            <div class="context-menu-item" id="duplicateEvent">複製</div>
-        </div>
-
-        <!-- Status Bar -->
-        <div class="status-bar">
-            <div class="status-info">
-                <span id="eventCount">0 個事件</span>
-                <span id="selectedDate"></span>
+            <div class="sidebar-section">
+                <h3>導入/導出</h3>
+                <button class="btn btn--outline btn--full-width" id="importBtn">導入</button>
+                <button class="btn btn--outline btn--full-width" id="exportBtn">導出</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
             </div>
-            <div class="status-actions">
-                <button class="btn btn--sm btn--secondary" id="clearFilters">清除篩選</button>
+
+            <div class="sidebar-section">
+                <h3>鍵盤快捷鍵</h3>
+                <div class="keyboard-shortcuts">
+                    <div class="shortcut">
+                        <kbd>←→</kbd>
+                        <span>日期導航</span>
+                    </div>
+                    <div class="shortcut">
+                        <kbd>↑↓</kbd>
+                        <span>週導航</span>
+                    </div>
+                    <div class="shortcut">
+                        <kbd>Enter</kbd>
+                        <span>選擇日期</span>
+                    </div>
+                    <div class="shortcut">
+                        <kbd>Tab</kbd>
+                        <span>開始鍵盤導航</span>
+                    </div>
+                    <div class="shortcut">
+                        <kbd>Esc</kbd>
+                        <span>取消選擇</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="calendar-container">
+                <!-- Month View -->
+                <div class="calendar-view" id="monthView">
+                    <div class="calendar-header">
+                        <div class="weekday">日</div>
+                        <div class="weekday">一</div>
+                        <div class="weekday">二</div>
+                        <div class="weekday">三</div>
+                        <div class="weekday">四</div>
+                        <div class="weekday">五</div>
+                        <div class="weekday">六</div>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                </div>
+
+                <!-- Week View -->
+                <div class="calendar-view hidden" id="weekView">
+                    <div class="week-header">
+                        <div class="time-column"></div>
+                        <div class="week-days" id="weekDays"></div>
+                    </div>
+                    <div class="week-content">
+                        <div class="time-slots" id="timeSlots"></div>
+                        <div class="week-grid" id="weekGrid"></div>
+                    </div>
+                </div>
+
+                <!-- Day View -->
+                <div class="calendar-view hidden" id="dayView">
+                    <div class="day-header">
+                        <h3 id="dayTitle"></h3>
+                    </div>
+                    <div class="day-content">
+                        <div class="time-slots" id="dayTimeSlots"></div>
+                        <div class="day-events" id="dayEvents"></div>
+                    </div>
+                </div>
+
+                <!-- Year View -->
+                <div class="calendar-view hidden" id="yearView">
+                    <div class="year-grid" id="yearGrid"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Event Modal -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">新增事件</h3>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="eventForm">
+                    <div class="form-group">
+                        <label class="form-label" for="eventTitle">標題</label>
+                        <input type="text" class="form-control" id="eventTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventDate">日期</label>
+                        <input type="date" class="form-control" id="eventDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventStartTime">開始時間</label>
+                        <input type="time" class="form-control" id="eventStartTime">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventEndTime">結束時間</label>
+                        <input type="time" class="form-control" id="eventEndTime">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventDescription">描述</label>
+                        <textarea class="form-control" id="eventDescription" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventType">類型</label>
+                        <select class="form-control" id="eventType">
+                            <option value="工作">工作</option>
+                            <option value="個人">個人</option>
+                            <option value="假期">假期</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventColor">顏色</label>
+                        <div class="color-picker" id="colorPicker">
+                            <div class="color-option" data-color="blue"></div>
+                            <div class="color-option" data-color="green"></div>
+                            <div class="color-option" data-color="yellow"></div>
+                            <div class="color-option" data-color="purple"></div>
+                            <div class="color-option" data-color="red"></div>
+                            <div class="color-option" data-color="orange"></div>
+                            <div class="color-option" data-color="pink"></div>
+                            <div class="color-option" data-color="teal"></div>
+                        </div>
+                        <input type="hidden" id="eventColor" value="blue">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventRepeat">重複</label>
+                        <select class="form-control" id="eventRepeat">
+                            <option value="不重複">不重複</option>
+                            <option value="每日">每日</option>
+                            <option value="每週">每週</option>
+                            <option value="每月">每月</option>
+                            <option value="每年">每年</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn--secondary" id="cancelEvent">取消</button>
+                <button type="button" class="btn btn--primary" id="saveEvent">儲存</button>
+                <button type="button" class="btn btn--outline" id="deleteEvent" style="display: none;">刪除</button>
             </div>
         </div>
     </div>
