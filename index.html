@@ -3,776 +3,737 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>裝潢工程承攬合約書</title>
+<title>裝潢工程合約產生器</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #1a1a1a;
-    --mid: #444;
-    --light: #888;
-    --rule: #bbb;
-    --accent: #c8a96e;
-    --bg-row: #fafaf8;
-    --border-heavy: 2px solid #1a1a1a;
-    --border-light: 1px solid #bbb;
+    --ink: #1a1714;
+    --ink-light: #4a4540;
+    --parchment: #f5f0e8;
+    --cream: #faf7f2;
+    --warm: #c8a96e;
+    --warm-light: #e8d9b8;
+    --warm-pale: #f0e8d4;
+    --accent: #8b6914;
+    --border: #d4c4a0;
+    --section-bg: #fffdf8;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", Arial, sans-serif;
-    font-size: 10.5pt;
-    line-height: 1.8;
+    background: var(--cream);
     color: var(--ink);
-    background: #e8e4dc;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    min-height: 100vh;
   }
 
-  .page-wrapper { max-width: 794px; margin: 0 auto; background: #fff; }
+  /* Layout */
+  .app { display: flex; min-height: 100vh; }
 
-  .page {
-    width: 794px;
-    min-height: 1123px;
-    padding: 28mm 20mm 24mm 22mm;
-    position: relative;
-    background: #fff;
-    border-bottom: 1px dashed #ccc;
+  .sidebar {
+    width: 420px;
+    min-width: 420px;
+    background: var(--ink);
+    color: var(--parchment);
+    padding: 40px 36px;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+    height: 100vh;
   }
 
-  /* ── 封面標題 ── */
-  .cover-header {
-    text-align: center;
-    padding-bottom: 10mm;
-    border-bottom: var(--border-heavy);
-    margin-bottom: 8mm;
+  .main {
+    flex: 1;
+    padding: 48px 52px;
+    overflow-y: auto;
   }
 
-  .cover-header::before {
+  /* Sidebar header */
+  .sidebar-header {
+    border-bottom: 1px solid rgba(200,169,110,0.3);
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+  }
+
+  .sidebar-header .label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--warm);
+    margin-bottom: 10px;
+  }
+
+  .sidebar-header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    line-height: 1.3;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .sidebar-header p {
+    font-size: 12px;
+    color: rgba(245,240,232,0.5);
+    line-height: 1.6;
+  }
+
+  /* Form sections */
+  .form-section {
+    margin-bottom: 28px;
+  }
+
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--warm);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
     content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(200,169,110,0.2);
+  }
+
+  .field { margin-bottom: 12px; }
+
+  .field label {
     display: block;
+    font-size: 11px;
+    color: rgba(245,240,232,0.6);
+    margin-bottom: 5px;
+    letter-spacing: 0.05em;
+  }
+
+  .field input,
+  .field textarea,
+  .field select {
     width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent) 70%, transparent 100%);
-    margin-bottom: 6mm;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(200,169,110,0.2);
+    border-radius: 4px;
+    padding: 9px 12px;
+    color: var(--parchment);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
   }
-
-  .doc-title {
-    font-size: 22pt;
-    font-weight: 900;
-    letter-spacing: 0.18em;
-    color: var(--ink);
-    line-height: 1.3;
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus {
+    border-color: var(--warm);
+    background: rgba(255,255,255,0.1);
   }
+  .field textarea { resize: vertical; min-height: 72px; }
+  .field select option { background: #2a2520; }
 
-  .doc-subtitle {
-    font-size: 9pt;
-    color: var(--light);
-    letter-spacing: 0.3em;
-    margin-top: 2mm;
-  }
+  /* Row layout */
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-  .doc-serial {
-    font-size: 8.5pt;
-    color: var(--mid);
-    margin-top: 3mm;
-    letter-spacing: 0.1em;
-  }
-
-  .doc-serial span {
-    border-bottom: 1px solid var(--rule);
-    display: inline-block;
-    min-width: 60px;
-  }
-
-  /* ── 模組標題 ── */
-  .module-title {
-    font-size: 10pt;
-    font-weight: 900;
-    letter-spacing: 0.15em;
-    color: #fff;
-    background: var(--ink);
-    padding: 3px 8px;
-    display: inline-block;
-    margin-bottom: 4mm;
-  }
-
-  .section { margin-bottom: 7mm; page-break-inside: avoid; }
-
-  /* ── 資料表格 ── */
-  table.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 10pt;
-    margin-bottom: 2mm;
-  }
-
-  table.data-table th {
-    background: var(--bg-row);
-    font-weight: 700;
-    padding: 4px 8px;
-    border: var(--border-light);
-    white-space: nowrap;
-    width: 95px;
-    vertical-align: top;
-  }
-
-  table.data-table td {
-    padding: 4px 8px;
-    border: var(--border-light);
-    vertical-align: top;
-  }
-
-  .fill-line {
-    border-bottom: 1px solid var(--ink);
-    display: inline-block;
-    min-width: 160px;
-    height: 18px;
-    vertical-align: bottom;
-  }
-
-  .fill-short { min-width: 70px; }
-  .fill-long  { min-width: 260px; }
-
-  /* ── 付款表格 ── */
-  table.payment-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 9.5pt;
-    margin-top: 2mm;
-  }
-
-  table.payment-table th {
-    background: var(--ink);
-    color: #fff;
-    padding: 4px 6px;
-    border: 1px solid var(--ink);
-    text-align: center;
-    font-weight: 700;
-  }
-
-  table.payment-table td {
-    padding: 4px 6px;
-    border: var(--border-light);
-    text-align: center;
-  }
-
-  table.payment-table tr:nth-child(even) td { background: var(--bg-row); }
-
-  /* ── 條款 ── */
-  .clause {
-    page-break-inside: avoid;
-    margin-bottom: 5mm;
-    padding: 4mm 5mm;
-    border: var(--border-light);
-    border-left: 3px solid var(--ink);
-    background: #fefefe;
-  }
-
-  .clause h3 {
-    font-size: 10.5pt;
-    font-weight: 900;
-    letter-spacing: 0.08em;
-    margin-bottom: 2mm;
-    color: var(--ink);
-  }
-
-  .clause-hl { border-left-color: var(--accent); background: #fdf9f2; }
-  .clause-hl h3 { color: #7a4f12; }
-
-  .clause p { margin-bottom: 1.5mm; text-indent: 2em; text-align: justify; }
-  .clause ol, .clause ul { padding-left: 3.5em; margin: 1mm 0; }
-  .clause li { margin-bottom: 0.8mm; }
-
-  /* ── 標籤 ── */
-  .risk-badge {
-    display: inline-block;
-    background: #c0392b;
-    color: #fff;
-    font-size: 7.5pt;
-    padding: 1px 5px;
-    border-radius: 2px;
-    margin-left: 6px;
-    vertical-align: middle;
-    font-weight: 700;
-  }
-
-  .notice-badge {
-    display: inline-block;
-    background: var(--accent);
-    color: #fff;
-    font-size: 7.5pt;
-    padding: 1px 5px;
-    border-radius: 2px;
-    margin-left: 6px;
-    vertical-align: middle;
-    font-weight: 700;
-  }
-
-  /* ── 附件 ── */
-  .attachment-grid {
+  /* Items table */
+  .items-list { margin-bottom: 10px; }
+  .item-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 4mm;
-    margin-top: 3mm;
-  }
-
-  .attachment-item {
-    border: var(--border-light);
-    padding: 4mm;
-    text-align: center;
-    background: var(--bg-row);
-  }
-
-  .checkbox-box {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 1.5px solid var(--ink);
-    margin-right: 4px;
-    vertical-align: middle;
-    position: relative;
-    top: -1px;
-  }
-
-  .attach-note {
-    font-size: 8.5pt;
-    color: var(--mid);
-    margin-top: 2mm;
-    padding: 2mm 3mm;
-    border: 1px dashed var(--rule);
-    background: #fdfdf9;
-  }
-
-  /* ── 簽署 ── */
-  .sign-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8mm;
-    margin-top: 4mm;
-  }
-
-  .sign-block { border: var(--border-heavy); padding: 5mm 6mm; }
-
-  .sign-block h4 {
-    font-size: 10.5pt;
-    font-weight: 900;
-    border-bottom: var(--border-heavy);
-    padding-bottom: 2mm;
-    margin-bottom: 4mm;
-    letter-spacing: 0.1em;
-  }
-
-  .sign-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 3.5mm;
-    font-size: 9.5pt;
-  }
-
-  .sign-label { white-space: nowrap; margin-right: 4px; }
-  .sign-line { flex: 1; border-bottom: 1px solid var(--ink); min-width: 60px; height: 18px; }
-
-  .seal-box {
-    width: 48px;
-    height: 48px;
-    border: 1.5px dashed var(--mid);
-    margin: 3mm auto 0;
-    display: flex;
+    grid-template-columns: 1fr 56px 70px 20px;
+    gap: 6px;
     align-items: center;
-    justify-content: center;
-    font-size: 8pt;
-    color: var(--light);
-    text-align: center;
-    line-height: 1.3;
+    margin-bottom: 6px;
   }
-
-  /* ── 頁尾 ── */
-  .page-footer {
-    position: absolute;
-    bottom: 10mm;
-    left: 22mm;
-    right: 20mm;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 8pt;
-    color: var(--light);
-    border-top: var(--border-light);
-    padding-top: 2mm;
+  .item-row input {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(200,169,110,0.2);
+    border-radius: 3px;
+    padding: 7px 9px;
+    color: var(--parchment);
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    outline: none;
+    width: 100%;
   }
-
-  .divider { border: none; border-top: var(--border-light); margin: 5mm 0; }
-  .divider-accent { border-top: 2px solid var(--accent); }
-
-  .note-box {
-    background: #f5f3ee;
-    border: 1px solid #d4c9b0;
-    border-left: 3px solid var(--accent);
-    padding: 3mm 4mm;
-    font-size: 9pt;
-    color: var(--mid);
-    margin-top: 2mm;
-  }
-
-  /* ── 列印 ── */
-  @media print {
-    body { background: #fff; }
-    .page-wrapper { max-width: none; }
-    .page {
-      width: 210mm;
-      min-height: 297mm;
-      padding: 20mm 18mm 22mm 20mm;
-      border-bottom: none;
-      page-break-after: always;
-    }
-    .page:last-child { page-break-after: auto; }
-    .section, .clause, .sign-grid, .attachment-grid { page-break-inside: avoid; }
-    @page { size: A4; margin: 0; }
-    .no-print { display: none !important; }
-  }
-
-  .print-btn {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: var(--ink);
-    color: #fff;
+  .item-row input:focus { border-color: var(--warm); }
+  .remove-item {
+    background: none;
     border: none;
-    padding: 10px 18px;
-    font-family: "Microsoft JhengHei", Arial, sans-serif;
-    font-size: 9.5pt;
+    color: rgba(200,169,110,0.4);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .remove-item:hover { color: #e06060; }
+
+  .add-item-btn {
+    background: none;
+    border: 1px dashed rgba(200,169,110,0.3);
+    border-radius: 3px;
+    color: rgba(200,169,110,0.6);
+    font-size: 11px;
+    font-family: 'Noto Sans TC', sans-serif;
+    cursor: pointer;
+    padding: 7px 14px;
+    width: 100%;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+  .add-item-btn:hover {
+    border-color: var(--warm);
+    color: var(--warm);
+    background: rgba(200,169,110,0.05);
+  }
+
+  /* Generate button */
+  .generate-btn {
+    width: 100%;
+    background: var(--warm);
+    color: var(--ink);
+    border: none;
+    border-radius: 5px;
+    padding: 14px 20px;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    font-weight: 600;
     letter-spacing: 0.1em;
     cursor: pointer;
-    z-index: 999;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: all 0.25s;
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .generate-btn:hover {
+    background: #d4b47a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(200,169,110,0.3);
+  }
+  .generate-btn:active { transform: translateY(0); }
+  .generate-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
   }
 
-  .print-btn:hover { background: #333; }
-  @media print { .print-btn { display: none; } }
+  /* Loading spinner */
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(26,23,20,0.3);
+    border-top-color: var(--ink);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Main area */
+  .main-header {
+    margin-bottom: 36px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .main-header .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--warm);
+    margin-bottom: 6px;
+  }
+  .main-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  /* Contract output */
+  #contract-output {
+    min-height: 200px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    color: var(--ink-light);
+  }
+  .empty-state .icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+  }
+  .empty-state p {
+    font-size: 13px;
+    line-height: 1.8;
+    opacity: 0.6;
+  }
+
+  /* Contract document */
+  .contract-doc {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 60px 64px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    line-height: 2;
+    color: var(--ink);
+    position: relative;
+  }
+
+  .contract-doc .doc-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 32px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .contract-doc .doc-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    margin-bottom: 8px;
+  }
+  .contract-doc .doc-header .doc-no {
+    font-size: 12px;
+    color: var(--ink-light);
+    letter-spacing: 0.1em;
+  }
+
+  .contract-doc .contract-body {
+    white-space: pre-wrap;
+    font-size: 13.5px;
+    line-height: 2.1;
+  }
+
+  .contract-doc .signature-area {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+  .sig-block p {
+    font-size: 12px;
+    border-top: 1px solid var(--ink);
+    padding-top: 6px;
+    margin-top: 40px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Action bar */
+  .action-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+  }
+  .action-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 18px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    color: var(--ink-light);
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .action-btn:hover {
+    border-color: var(--warm);
+    color: var(--accent);
+    background: var(--warm-pale);
+  }
+  .action-btn.primary {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+  }
+  .action-btn.primary:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* Streaming cursor */
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: var(--warm);
+    vertical-align: text-bottom;
+    animation: blink 0.8s step-end infinite;
+    margin-left: 2px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--warm-light); border-radius: 10px; }
+
+  @media (max-width: 900px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; min-width: unset; height: auto; position: static; }
+    .main { padding: 32px 24px; }
+    .contract-doc { padding: 36px 28px; }
+  }
 </style>
 </head>
 <body>
-
-<button class="print-btn no-print" onclick="window.print()">⊞ 列印 / 匯出 PDF</button>
-
-<div class="page-wrapper">
-
-<!-- ═════════ PAGE 1：封面 + 甲乙方 + 專案條款 ═════════ -->
-<div class="page">
-
-  <div class="cover-header">
-    <div class="doc-title">裝潢工程承攬合約書</div>
-    <div class="doc-subtitle">Interior Renovation Contract Agreement</div>
-    <div class="doc-serial">
-      合約編號：<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-      &ensp;簽約日期：中華民國 <span>&nbsp;&nbsp;&nbsp;&nbsp;</span> 年 <span>&nbsp;&nbsp;</span> 月 <span>&nbsp;&nbsp;</span> 日
+<div class="app">
+  <!-- Sidebar Form -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="label">Contract Generator</div>
+      <h1>裝潢工程<br>合約產生器</h1>
+      <p>填寫基本資訊，AI 將自動生成完整合法的工程合約</p>
     </div>
-  </div>
 
-  <!-- 第一模組 -->
-  <div class="section">
-    <div class="module-title">第一模組　基本資料</div>
-
-    <table class="data-table">
-      <tbody>
-        <tr>
-          <th colspan="2" style="background:#1a1a1a;color:#fff;text-align:center;letter-spacing:0.2em;">甲 方（業主）</th>
-        </tr>
-        <tr><th>姓　　名</th><td><span class="fill-line fill-long"></span></td></tr>
-        <tr><th>身分證字號</th><td><span class="fill-line"></span></td></tr>
-        <tr><th>戶籍地址</th><td><span class="fill-line fill-long"></span></td></tr>
-        <tr><th>通訊地址</th><td><span class="fill-line fill-long"></span></td></tr>
-        <tr><th>聯絡電話</th><td><span class="fill-line"></span></td></tr>
-      </tbody>
-    </table>
-
-    <div style="height:4mm;"></div>
-
-    <table class="data-table">
-      <tbody>
-        <tr>
-          <th colspan="2" style="background:#1a1a1a;color:#fff;text-align:center;letter-spacing:0.2em;">乙 方（承包商）</th>
-        </tr>
-        <tr><th>公司名稱</th><td><span class="fill-line fill-long"></span></td></tr>
-        <tr><th>統一編號</th><td><span class="fill-line"></span></td></tr>
-        <tr><th>負 責 人</th><td><span class="fill-line"></span></td></tr>
-        <tr><th>公司地址</th><td><span class="fill-line fill-long"></span></td></tr>
-        <tr><th>聯絡電話</th><td><span class="fill-line"></span></td></tr>
-        <tr><th>室內裝修<br>許可證號</th><td><span class="fill-line"></span>&ensp;（依《建築物室內裝修管理辦法》登記）</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- 第二模組 -->
-  <div class="section">
-    <div class="module-title">第二模組　專案條款（客製區）</div>
-
-    <table class="data-table">
-      <tbody>
-        <tr><th>工程名稱</th><td><span class="fill-line fill-long"></span> 裝潢工程</td></tr>
-        <tr><th>工程地點</th><td><span class="fill-line fill-long"></span></td></tr>
-        <tr>
-          <th>工程範圍</th>
-          <td style="padding:5px 8px;">
-            <div style="border-bottom:1px solid #bbb;min-height:20px;margin-bottom:4px;"></div>
-            <div style="border-bottom:1px solid #bbb;min-height:20px;margin-bottom:4px;"></div>
-            <div style="border-bottom:1px solid #bbb;min-height:20px;"></div>
-          </td>
-        </tr>
-        <tr><th>工程總價</th><td>新台幣 <span class="fill-line fill-short"></span> 元整（NT$ <span class="fill-line fill-short"></span>）</td></tr>
-        <tr><th>開工日期</th><td>中華民國 <span class="fill-line" style="min-width:40px;"></span> 年 <span class="fill-line" style="min-width:24px;"></span> 月 <span class="fill-line" style="min-width:24px;"></span> 日</td></tr>
-        <tr><th>預定完工</th><td>中華民國 <span class="fill-line" style="min-width:40px;"></span> 年 <span class="fill-line" style="min-width:24px;"></span> 月 <span class="fill-line" style="min-width:24px;"></span> 日</td></tr>
-        <tr><th>施工天數</th><td>預定施工日曆天 <span class="fill-line" style="min-width:40px;"></span> 天（含例假日）</td></tr>
-      </tbody>
-    </table>
-
-    <div style="font-size:9.5pt;font-weight:700;margin:3mm 0 2mm;letter-spacing:0.08em;">付款分期計畫表</div>
-    <table class="payment-table">
-      <thead>
-        <tr>
-          <th>期別</th>
-          <th>付款條件 / 付款時機</th>
-          <th>比例</th>
-          <th>金額（新台幣）</th>
-          <th>備　　注</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>第一期</td>
-          <td>簽約時（訂金）</td>
-          <td><span class="fill-line" style="min-width:32px;"></span> %</td>
-          <td>NT$ <span class="fill-line" style="min-width:55px;"></span></td>
-          <td>不超過總價 30%</td>
-        </tr>
-        <tr>
-          <td>第二期</td>
-          <td>動工進場後</td>
-          <td><span class="fill-line" style="min-width:32px;"></span> %</td>
-          <td>NT$ <span class="fill-line" style="min-width:55px;"></span></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td>第三期</td>
-          <td>工程進度達 50% 驗收通過</td>
-          <td><span class="fill-line" style="min-width:32px;"></span> %</td>
-          <td>NT$ <span class="fill-line" style="min-width:55px;"></span></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td>第四期</td>
-          <td>工程進度達 80% 驗收通過</td>
-          <td><span class="fill-line" style="min-width:32px;"></span> %</td>
-          <td>NT$ <span class="fill-line" style="min-width:55px;"></span></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td>第五期</td>
-          <td>竣工驗收通過（尾款）</td>
-          <td><span class="fill-line" style="min-width:32px;"></span> %</td>
-          <td>NT$ <span class="fill-line" style="min-width:55px;"></span></td>
-          <td>建議不低於 5%</td>
-        </tr>
-        <tr>
-          <td colspan="2" style="text-align:right;font-weight:700;">合　計</td>
-          <td style="font-weight:700;">100%</td>
-          <td style="font-weight:700;">NT$ <span class="fill-line" style="min-width:55px;"></span></td>
-          <td></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="page-footer">
-    <span>裝潢工程承攬合約書</span>
-    <span>甲方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
-    <span>乙方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
-    <span>第 1 頁 / 共 4 頁</span>
-  </div>
-</div>
-
-<!-- ═════════ PAGE 2：標準條款 第一至六條 ═════════ -->
-<div class="page">
-
-  <div class="module-title">第三模組　標準條款</div>
-
-  <div class="clause">
-    <h3>第一條　工程範圍與內容</h3>
-    <p>乙方承攬甲方委託之室內裝修工程（以下簡稱「本工程」），工程範圍以雙方簽認之工程報價單（附件一）及設計圖說（附件二）為準。</p>
-    <p>工程範圍如有疑義，以設計圖說為優先，設計圖說未載明者，以工程報價單為準；兩者均未載明者，以書面協議補充之。</p>
-    <p>乙方應依建築技術規則、內政部頒訂相關法規及台灣現行國家標準（CNS）施作，並取得依法應辦理之相關許可。</p>
-  </div>
-
-  <div class="clause">
-    <h3>第二條　工期與完工期限</h3>
-    <p>乙方應於開工日起算之約定施工日曆天內完成本工程，並辦理驗收交付。</p>
-    <p>下列情形發生時，經甲方書面確認，得合理展延工期，並不視為乙方違約：</p>
-    <ol>
-      <li>因第十一條所定不可抗力事由；</li>
-      <li>因甲方指示設計變更或追加工程；</li>
-      <li>因甲方未依約支付工程款，致乙方依法停工；</li>
-      <li>政府機關命令停工或其他非可歸責於乙方之情事。</li>
-    </ol>
-    <p>工期展延申請，乙方應於事由發生後 7 個工作日內以書面通知甲方，逾期不得主張展延。</p>
-  </div>
-
-  <div class="clause">
-    <h3>第三條　工程價款與付款方式</h3>
-    <p>本工程總價依第二模組專案條款付款分期計畫表所訂金額為準，付款方式採「階段驗收付款機制」。</p>
-    <ol>
-      <li><strong>驗收付款原則：</strong>每期款項以甲方對應階段工程驗收簽認後，應於 7 個工作日內完成匯款或現金給付，甲方不得無故拒絕驗收。</li>
-      <li><strong>驗收爭議：</strong>如甲方對工程品質有疑義，應以書面載明具體瑕疵項目通知乙方；乙方應於收到通知後 7 個工作日內完成修繕，修繕完成後甲方應即辦理複驗。</li>
-      <li><strong>付款遲延：</strong>甲方逾期未付工程款者，每逾一日按遲付金額萬分之三計算遲延利息；逾期超過 14 日者，乙方得停工並書面通知甲方，停工期間工期相應展延，相關損失由甲方負擔。</li>
-      <li><strong>發票開立：</strong>乙方應依《加值型及非加值型營業稅法》規定開立統一發票；如乙方為免稅銷售者，應依法開立收據。</li>
-    </ol>
-  </div>
-
-  <div class="clause">
-    <h3>第四條　設計變更與追加減帳</h3>
-    <p>本工程施工期間，如甲方提出設計變更或追加減帳事項，需依下列程序辦理，否則不生效力：</p>
-    <ol>
-      <li>甲方以書面提出變更需求；</li>
-      <li>乙方於 5 個工作日內提供書面變更估價單，載明工程項目、費用增減及工期影響；</li>
-      <li>雙方簽署「工程變更確認單」後，方得施工；</li>
-      <li>口頭指示概不列為有效變更依據。</li>
-    </ol>
-    <p>追加工程款應依前項確認單所訂金額計算，並納入付款分期計畫中；減帳工程款則於最終驗收時統一結算。</p>
-  </div>
-
-  <div class="clause">
-    <h3>第五條　材料與施工品質</h3>
-    <p>乙方使用之材料應符合附件三（材料設備表）所載規格，且均需符合台灣現行 CNS 國家標準、環保法規及建築技術規則之相關規定。</p>
-    <p>甲方得隨時進場查驗材料規格及施工品質。如發現材料不符合約規範，乙方應於甲方書面通知後 3 個工作日內更換；逾期不換者，甲方得扣除對應期款，或自行採購並向乙方求償差價。</p>
-    <p>本工程使用之油漆、黏著劑、板材等建材，其甲醛含量、揮發性有機化合物（VOC）排放量不得超過《室內空氣品質管理法》所定相關標準。</p>
-  </div>
-
-  <div class="clause">
-    <h3>第六條　驗收與交付</h3>
-    <p>本工程採分階段驗收，驗收節點依第二模組付款分期計畫表所列條件執行，每次驗收雙方均應簽署「階段驗收紀錄表」。</p>
-    <p><strong>竣工驗收程序：</strong></p>
-    <ol>
-      <li>乙方完工後以書面通知甲方，甲方應於收到通知後 5 個工作日內進行最終驗收；</li>
-      <li>驗收合格，雙方簽署「竣工驗收證明書」，乙方憑此請領尾款；</li>
-      <li>驗收發現缺失，乙方應於約定期限內完成改善，改善後進行複驗；</li>
-      <li>甲方逾期不辦理驗收，視為驗收通過，乙方得請領尾款。</li>
-    </ol>
-  </div>
-
-  <div class="page-footer">
-    <span>裝潢工程承攬合約書</span>
-    <span>甲方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
-    <span>乙方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
-    <span>第 2 頁 / 共 4 頁</span>
-  </div>
-</div>
-
-<!-- ═════════ PAGE 3：風險控管條款 第七至十二條 ═════════ -->
-<div class="page">
-
-  <div class="module-title" style="background:#7a4f12;">⚠ 風險控管強化條款</div>
-
-  <div class="clause clause-hl">
-    <h3>第七條　保固條款 <span class="notice-badge">重要</span></h3>
-    <p>乙方應自竣工驗收通過之日起，對本工程提供至少一（1）年之保固服務，保固期間因施工瑕疵或材料品質不符所致之損壞，乙方應無償修繕。</p>
-    <p><strong>保固範圍包含：</strong>木作工程、泥作工程、水電配管配線、油漆粉刷、輕隔間、天花板、地板鋪設及固定式家具等。</p>
-    <p><strong>下列情形不在保固範圍：</strong></p>
-    <ol>
-      <li>因甲方或第三人使用不當、人為破壞所致之損壞；</li>
-      <li>因不可抗力事由（地震、颱風等天災）所致之損壞；</li>
-      <li>甲方自行改裝或委由第三方施作所造成之損壞；</li>
-      <li>正常磨損及自然老化。</li>
-    </ol>
-    <p>保固期滿後，乙方仍得依有償方式提供維修服務。</p>
-  </div>
-
-  <div class="clause clause-hl">
-    <h3>第八條　違約責任 <span class="risk-badge">關鍵條款</span></h3>
-    <p><strong>（一）乙方違約責任：</strong></p>
-    <ol>
-      <li><strong>工期延遲：</strong>乙方無正當理由未能於約定期限完工者，每逾一日，應按工程總價之千分之一（‰1）計算違約金，惟違約金總額以不超過工程總價之 10% 為上限；超過 30 日者，甲方得終止合約並請求損害賠償。</li>
-      <li><strong>施工瑕疵未改善：</strong>乙方於保固期內未依時修繕者，甲方得委由第三方施作，費用由乙方負擔，並得向乙方主張費用加計 20% 之管理費。</li>
-      <li><strong>擅自停工：</strong>乙方非因可歸責於甲方之事由擅自停工逾 7 日者，視為乙方違約，甲方得終止合約並請求損害賠償。</li>
-    </ol>
-    <p><strong>（二）甲方違約責任：</strong></p>
-    <ol>
-      <li><strong>付款遲延：</strong>依第三條第三款計算遲延利息；甲方逾期付款超過 30 日者，乙方得終止合約並請求應付款項及損害賠償。</li>
-      <li><strong>無正當理由終止：</strong>甲方如非因可歸責於乙方之事由而終止合約，應賠償乙方已完成工程費用，並支付工程總價 10% 之違約金。</li>
-    </ol>
-    <p>雙方同意上述違約金為損害賠償總額預定性質，法院得依情事酌減之。</p>
-  </div>
-
-  <div class="clause clause-hl">
-    <h3>第九條　預付款與履約保障 <span class="notice-badge">保護甲方</span></h3>
-    <p>本合約採下列履約保障措施，以平衡雙方風險：</p>
-    <ol>
-      <li><strong>訂金上限：</strong>簽約時之第一期款（訂金）不得超過工程總價之 30%；如有超過，視為無效超額部分，甲方得拒絕給付。</li>
-      <li><strong>分段付款保護：</strong>付款以「階段驗收通過」為前提，未驗收通過前甲方無給付下一期款之義務。</li>
-      <li>
-        <strong>履約保障（擇一）：</strong>
-        <ul>
-          <li><span class="checkbox-box"></span> 乙方提供銀行或保險公司開立之「履約保證書」；</li>
-          <li><span class="checkbox-box"></span> 各期款設第三方信託帳戶，依驗收結果分批撥付；</li>
-          <li><span class="checkbox-box"></span> 免附加履約保障（雙方合意）。</li>
-        </ul>
-      </li>
-      <li><strong>材料預付款：</strong>甲方如預付特殊訂製材料費，乙方應提供相應訂購單據（賣方單據）為憑。</li>
-    </ol>
-  </div>
-
-  <div class="clause">
-    <h3>第十條　爭議處理</h3>
-    <p>本合約適用中華民國法律。雙方如有爭議，應先本於誠信原則以協商方式解決；協商不成，得依下列方式處理：</p>
-    <ol>
-      <li><strong>調解：</strong>得向工程所在地之鄉鎮市調解委員會或消費者保護機關申請調解；</li>
-      <li><strong>訴訟：</strong>以工程所在地之地方法院為第一審管轄法院。</li>
-    </ol>
-  </div>
-
-  <div class="clause">
-    <h3>第十一條　不可抗力</h3>
-    <p>下列情形發生致使一方無法履行義務者，不構成違約，但應於事由發生後 3 日內書面通知對方：</p>
-    <ol>
-      <li>颱風、地震、洪水、土石流等天然災害；</li>
-      <li>戰爭、暴動、政府機關命令（如封城、禁建令）；</li>
-      <li>全國性罷工、重大傳染病疫情（依行政院公告為準）；</li>
-      <li>其他雙方均無法合理預見及控制之事由。</li>
-    </ol>
-    <p>不可抗力情形消滅後，雙方應立即恢復履約，並協商調整工期及相關費用。</p>
-  </div>
-
-  <div class="clause">
-    <h3>第十二條　其他約定</h3>
-    <ol>
-      <li><strong>合約完整性：</strong>本合約連同附件構成雙方完整合意，其效力優於雙方先前任何口頭或書面協議。</li>
-      <li><strong>合約修改：</strong>任何修改均需雙方書面簽認，方生效力。</li>
-      <li><strong>可分割性：</strong>本合約任一條款被認定無效，不影響其餘條款之效力。</li>
-      <li><strong>個人資料保護：</strong>雙方同意依《個人資料保護法》規定，僅將本合約所載個人資料用於合約履行目的，不得洩漏或作其他用途。</li>
-      <li><strong>合約份數：</strong>本合約一式兩份，甲乙方各執一份為憑。</li>
-    </ol>
-    <div style="margin-top:3mm;">
-      <div style="font-weight:700;font-size:9.5pt;margin-bottom:1.5mm;">其他特別約定事項：</div>
-      <div style="border-bottom:1px solid #bbb;min-height:20px;margin-bottom:3mm;"></div>
-      <div style="border-bottom:1px solid #bbb;min-height:20px;margin-bottom:3mm;"></div>
-      <div style="border-bottom:1px solid #bbb;min-height:20px;"></div>
+    <!-- 甲方 -->
+    <div class="form-section">
+      <div class="section-title">甲方（業主）</div>
+      <div class="field"><label>姓名 / 公司名稱</label><input type="text" id="owner-name" placeholder="林○○ / ○○有限公司"></div>
+      <div class="field-row">
+        <div class="field"><label>身分證 / 統一編號</label><input type="text" id="owner-id" placeholder="A123456789"></div>
+        <div class="field"><label>聯絡電話</label><input type="text" id="owner-phone" placeholder="0912-345-678"></div>
+      </div>
+      <div class="field"><label>地址</label><input type="text" id="owner-addr" placeholder="台北市○○區○○路○號"></div>
     </div>
-  </div>
 
-  <div class="page-footer">
-    <span>裝潢工程承攬合約書</span>
-    <span>甲方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
-    <span>乙方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
-    <span>第 3 頁 / 共 4 頁</span>
-  </div>
-</div>
-
-<!-- ═════════ PAGE 4：附件 + 簽署區 ═════════ -->
-<div class="page">
-
-  <!-- 第四模組：附件 -->
-  <div class="section">
-    <div class="module-title">第四模組　附件清單</div>
-
-    <div class="attachment-grid">
-      <div class="attachment-item">
-        <div><span class="checkbox-box"></span><strong>附件一</strong></div>
-        <div style="margin-top:2mm;font-size:9pt;">工程報價單</div>
-        <div style="font-size:8pt;color:var(--light);margin-top:1mm;">含項目、單價、數量、小計</div>
+    <!-- 乙方 -->
+    <div class="form-section">
+      <div class="section-title">乙方（承包商）</div>
+      <div class="field"><label>公司 / 工作室名稱</label><input type="text" id="contractor-name" placeholder="○○室內裝修有限公司"></div>
+      <div class="field-row">
+        <div class="field"><label>統一編號</label><input type="text" id="contractor-id" placeholder="12345678"></div>
+        <div class="field"><label>負責人</label><input type="text" id="contractor-rep" placeholder="王○○"></div>
       </div>
-      <div class="attachment-item">
-        <div><span class="checkbox-box"></span><strong>附件二</strong></div>
-        <div style="margin-top:2mm;font-size:9pt;">設計圖說</div>
-        <div style="font-size:8pt;color:var(--light);margin-top:1mm;">平面圖、立面圖、施工詳圖</div>
-      </div>
-      <div class="attachment-item">
-        <div><span class="checkbox-box"></span><strong>附件三</strong></div>
-        <div style="margin-top:2mm;font-size:9pt;">材料設備表</div>
-        <div style="font-size:8pt;color:var(--light);margin-top:1mm;">品牌、型號、規格、產地</div>
+      <div class="field"><label>公司地址</label><input type="text" id="contractor-addr" placeholder="台北市○○區○○路○號"></div>
+      <div class="field-row">
+        <div class="field"><label>電話</label><input type="text" id="contractor-phone" placeholder="02-1234-5678"></div>
+        <div class="field"><label>室內裝修業登記證號</label><input type="text" id="contractor-license" placeholder="北市裝修字第○○號"></div>
       </div>
     </div>
 
-    <div class="attach-note">
-      ※ 上述勾選附件與本合約書具同等法律效力，如有牴觸，以本合約正文為準。附件如有修改，需另行書面協議簽認始生效力。
+    <!-- 工程資訊 -->
+    <div class="form-section">
+      <div class="section-title">工程資訊</div>
+      <div class="field"><label>工程名稱</label><input type="text" id="project-name" placeholder="民生社區住宅室內裝修工程"></div>
+      <div class="field"><label>施工地址</label><input type="text" id="project-addr" placeholder="台北市松山區民生東路○段○號○樓"></div>
+      <div class="field-row">
+        <div class="field"><label>開工日期</label><input type="date" id="start-date"></div>
+        <div class="field"><label>完工日期</label><input type="date" id="end-date"></div>
+      </div>
+      <div class="field">
+        <label>付款方式</label>
+        <select id="payment-type">
+          <option value="三期">三期付款（簽約/開工/完工）</option>
+          <option value="四期">四期付款（簽約/開工/中期/完工）</option>
+          <option value="兩期">兩期付款（開工/完工）</option>
+          <option value="自訂">自訂方式</option>
+        </select>
+      </div>
     </div>
-  </div>
 
-  <hr class="divider divider-accent">
-
-  <!-- 第五模組：簽署 -->
-  <div class="section">
-    <div class="module-title">第五模組　合約簽署</div>
-
-    <div class="note-box" style="margin-bottom:5mm;">
-      本合約於中華民國 <span class="fill-line" style="min-width:40px;"></span> 年 <span class="fill-line" style="min-width:24px;"></span> 月 <span class="fill-line" style="min-width:24px;"></span> 日，經甲乙雙方詳閱全文，確認同意後簽署生效。
-    </div>
-
-    <div class="sign-grid">
-      <!-- 甲方 -->
-      <div class="sign-block">
-        <h4>甲　方（業主）</h4>
-        <div class="sign-row"><span class="sign-label">姓　　名：</span><span class="sign-line"></span></div>
-        <div class="sign-row"><span class="sign-label">身分證號：</span><span class="sign-line"></span></div>
-        <div class="sign-row"><span class="sign-label">聯絡電話：</span><span class="sign-line"></span></div>
-        <div class="sign-row"><span class="sign-label">簽　　名：</span><span class="sign-line" style="min-height:32px;"></span></div>
-        <div class="sign-row">
-          <span class="sign-label">日　　期：</span>
-          <span style="font-size:9pt;">民國 <span class="fill-line" style="min-width:30px;"></span> 年 <span class="fill-line" style="min-width:22px;"></span> 月 <span class="fill-line" style="min-width:22px;"></span> 日</span>
-        </div>
-        <div style="text-align:center;margin-top:3mm;">
-          <div class="seal-box">蓋印<br>章處</div>
-          <div style="font-size:8pt;color:var(--light);margin-top:1mm;">（甲方印鑑）</div>
+    <!-- 工程項目 -->
+    <div class="form-section">
+      <div class="section-title">工程項目與報價</div>
+      <div class="item-row" style="margin-bottom:6px;opacity:0.4;font-size:10px;letter-spacing:0.05em;">
+        <span>項目名稱</span><span>數量</span><span>金額(元)</span><span></span>
+      </div>
+      <div class="items-list" id="items-list">
+        <div class="item-row">
+          <input type="text" placeholder="拆除工程" class="item-name">
+          <input type="number" placeholder="1" class="item-qty">
+          <input type="number" placeholder="50000" class="item-price">
+          <button class="remove-item" onclick="removeItem(this)">×</button>
         </div>
       </div>
+      <button class="add-item-btn" onclick="addItem()">＋ 新增工程項目</button>
+    </div>
 
-      <!-- 乙方 -->
-      <div class="sign-block">
-        <h4>乙　方（承包商）</h4>
-        <div class="sign-row"><span class="sign-label">公司名稱：</span><span class="sign-line"></span></div>
-        <div class="sign-row"><span class="sign-label">統一編號：</span><span class="sign-line"></span></div>
-        <div class="sign-row"><span class="sign-label">負 責 人：</span><span class="sign-line"></span></div>
-        <div class="sign-row"><span class="sign-label">簽　　名：</span><span class="sign-line" style="min-height:32px;"></span></div>
-        <div class="sign-row">
-          <span class="sign-label">日　　期：</span>
-          <span style="font-size:9pt;">民國 <span class="fill-line" style="min-width:30px;"></span> 年 <span class="fill-line" style="min-width:22px;"></span> 月 <span class="fill-line" style="min-width:22px;"></span> 日</span>
-        </div>
-        <div style="text-align:center;margin-top:3mm;">
-          <div style="display:flex;justify-content:center;gap:6mm;">
-            <div>
-              <div class="seal-box">公司<br>大章</div>
-              <div style="font-size:8pt;color:var(--light);margin-top:1mm;text-align:center;">公司大印</div>
-            </div>
-            <div>
-              <div class="seal-box">負責人<br>小章</div>
-              <div style="font-size:8pt;color:var(--light);margin-top:1mm;text-align:center;">負責人章</div>
-            </div>
-          </div>
-        </div>
+    <!-- 特殊條款 -->
+    <div class="form-section">
+      <div class="section-title">特殊需求 / 備註</div>
+      <div class="field">
+        <textarea id="special-notes" placeholder="例如：需包含保固條款、環保建材要求、特殊施工規範、防水保固年限…等"></textarea>
       </div>
     </div>
 
-    <!-- 見證人 -->
-    <div style="margin-top:6mm;border:var(--border-light);padding:4mm 5mm;">
-      <div style="font-weight:700;font-size:9.5pt;margin-bottom:3mm;letter-spacing:0.1em;">見 證 人（選填）</div>
-      <div style="display:flex;gap:10mm;">
-        <div style="flex:1;"><div class="sign-row"><span class="sign-label">姓名：</span><span class="sign-line"></span></div></div>
-        <div style="flex:1;"><div class="sign-row"><span class="sign-label">身分證號：</span><span class="sign-line"></span></div></div>
-        <div style="flex:1;"><div class="sign-row"><span class="sign-label">簽名：</span><span class="sign-line"></span></div></div>
+    <button class="generate-btn" onclick="generateContract()" id="gen-btn">
+      產生合約書
+    </button>
+  </aside>
+
+  <!-- Main Output -->
+  <main class="main">
+    <div class="main-header">
+      <div class="eyebrow">Output Preview</div>
+      <h2>合約預覽</h2>
+    </div>
+
+    <div id="contract-output">
+      <div class="empty-state">
+        <div class="icon">📋</div>
+        <p>填寫左側表單資料後<br>點擊「產生合約書」<br>AI 將依據資訊生成完整合約文件</p>
       </div>
     </div>
-  </div>
-
-  <hr class="divider">
-
-  <div style="font-size:8pt;color:var(--light);line-height:1.6;text-align:justify;">
-    <strong style="color:var(--mid);">法律聲明：</strong>本合約書範本僅供參考，各條款文字應依個案情形調整。如涉及高額工程或複雜糾紛，建議委任律師審閱。本文件依中華民國《民法》第四百九十條以下承攬相關規定及《消費者保護法》相關規定製作，兼顧業主與承包商雙方合理權益。
-  </div>
-
-  <div class="page-footer">
-    <span>裝潢工程承攬合約書</span>
-    <span>甲方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
-    <span>乙方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
-    <span>第 4 頁 / 共 4 頁</span>
-  </div>
+  </main>
 </div>
 
-</div><!-- end page-wrapper -->
+<script>
+function addItem() {
+  const list = document.getElementById('items-list');
+  const row = document.createElement('div');
+  row.className = 'item-row';
+  row.innerHTML = `
+    <input type="text" placeholder="工程項目" class="item-name">
+    <input type="number" placeholder="1" class="item-qty">
+    <input type="number" placeholder="0" class="item-price">
+    <button class="remove-item" onclick="removeItem(this)">×</button>
+  `;
+  list.appendChild(row);
+}
+
+function removeItem(btn) {
+  const rows = document.querySelectorAll('.item-row');
+  if (rows.length > 1) btn.closest('.item-row').remove();
+}
+
+function getItems() {
+  const rows = document.querySelectorAll('.item-row');
+  let items = [];
+  let total = 0;
+  rows.forEach(row => {
+    const name = row.querySelector('.item-name')?.value?.trim();
+    const qty = row.querySelector('.item-qty')?.value || 1;
+    const price = parseFloat(row.querySelector('.item-price')?.value) || 0;
+    if (name) {
+      items.push({ name, qty: parseInt(qty), price });
+      total += price;
+    }
+  });
+  return { items, total };
+}
+
+function formatCurrency(n) {
+  return n.toLocaleString('zh-TW');
+}
+
+async function generateContract() {
+  const btn = document.getElementById('gen-btn');
+  const output = document.getElementById('contract-output');
+
+  // Collect data
+  const data = {
+    ownerName: document.getElementById('owner-name').value || '甲方姓名',
+    ownerId: document.getElementById('owner-id').value || '___',
+    ownerPhone: document.getElementById('owner-phone').value || '___',
+    ownerAddr: document.getElementById('owner-addr').value || '___',
+    contractorName: document.getElementById('contractor-name').value || '乙方公司',
+    contractorId: document.getElementById('contractor-id').value || '___',
+    contractorRep: document.getElementById('contractor-rep').value || '___',
+    contractorAddr: document.getElementById('contractor-addr').value || '___',
+    contractorPhone: document.getElementById('contractor-phone').value || '___',
+    contractorLicense: document.getElementById('contractor-license').value || '___',
+    projectName: document.getElementById('project-name').value || '室內裝修工程',
+    projectAddr: document.getElementById('project-addr').value || '___',
+    startDate: document.getElementById('start-date').value || '___',
+    endDate: document.getElementById('end-date').value || '___',
+    paymentType: document.getElementById('payment-type').value,
+    specialNotes: document.getElementById('special-notes').value || '無',
+  };
+  const { items, total } = getItems();
+
+  const itemsText = items.length
+    ? items.map((i, idx) => `  ${idx+1}. ${i.name}（${i.qty}式）：新台幣 ${formatCurrency(i.price)} 元`).join('\n')
+    : '  （請填寫工程項目）';
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> AI 生成中…';
+
+  // Show container
+  output.innerHTML = `
+    <div class="contract-doc">
+      <div class="doc-header">
+        <h1>裝潢工程承攬合約書</h1>
+        <div class="doc-no">Contract No. ___________</div>
+      </div>
+      <div class="contract-body" id="streaming-body"><span class="cursor"></span></div>
+    </div>
+  `;
+
+  const prompt = `請依據以下資訊，產生一份完整、專業、合法的台灣「裝潢工程承攬合約書」正文內容（不含標題，從當事人條款開始）。
+
+【甲方（業主）】
+姓名：${data.ownerName}
+身分證/統編：${data.ownerId}
+電話：${data.ownerPhone}
+地址：${data.ownerAddr}
+
+【乙方（承包商）】
+公司名稱：${data.contractorName}
+統一編號：${data.contractorId}
+負責人：${data.contractorRep}
+公司地址：${data.contractorAddr}
+電話：${data.contractorPhone}
+室內裝修業登記證號：${data.contractorLicense}
+
+【工程資訊】
+工程名稱：${data.projectName}
+施工地址：${data.projectAddr}
+預計開工：${data.startDate}
+預計完工：${data.endDate}
+付款方式：${data.paymentType}
+
+【工程項目】
+${itemsText}
+合計總價：新台幣 ${formatCurrency(total)} 元整
+
+【特殊需求/備註】
+${data.specialNotes}
+
+請依序包含以下條款（用正式繁體中文，條款格式清晰）：
+第一條 工程範圍
+第二條 工程期限
+第三條 工程總價及付款方式（依據付款方式「${data.paymentType}」說明各期付款金額與時機）
+第四條 材料與施工標準
+第五條 工程變更
+第六條 工程驗收
+第七條 保固責任（至少1年一般保固，防水工程2年）
+第八條 甲方權利與義務
+第九條 乙方權利與義務
+第十條 違約責任（含工期延誤罰則，每逾期一日按總工程款千分之一計罰）
+第十一條 不可抗力
+第十二條 爭議處理（以台灣台北地方法院為第一審管轄法院）
+第十三條 合約效力
+
+結尾加上「本合約書一式兩份，雙方各執一份為憑。」及簽約日期欄位。`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 3000,
+        stream: true,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    const bodyEl = document.getElementById('streaming-body');
+    let fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+              fullText += parsed.delta.text;
+              bodyEl.innerHTML = escapeHtml(fullText) + '<span class="cursor"></span>';
+              bodyEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+          } catch (e) {}
+        }
+      }
+    }
+
+    // Remove cursor, add signature block
+    bodyEl.innerHTML = escapeHtml(fullText);
+    const doc = bodyEl.closest('.contract-doc');
+    doc.innerHTML += `
+      <div class="signature-area">
+        <div class="sig-block">
+          <p>甲方（業主）簽章</p>
+          <p style="margin-top:8px;font-size:11px;color:#666;">姓名：${escapeHtml(data.ownerName)}</p>
+        </div>
+        <div class="sig-block">
+          <p>乙方（承包商）簽章</p>
+          <p style="margin-top:8px;font-size:11px;color:#666;">公司：${escapeHtml(data.contractorName)}</p>
+        </div>
+      </div>
+    `;
+
+    // Action buttons
+    output.innerHTML += `
+      <div class="action-bar">
+        <button class="action-btn" onclick="copyContract()">複製全文</button>
+        <button class="action-btn primary" onclick="printContract()">列印 / 匯出 PDF</button>
+      </div>
+    `;
+
+  } catch (err) {
+    output.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>生成失敗，請稍後重試。<br><small>${err.message}</small></p></div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '重新產生合約書';
+  }
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>');
+}
+
+function copyContract() {
+  const text = document.querySelector('.contract-body')?.innerText || '';
+  navigator.clipboard.writeText(text).then(() => alert('合約內容已複製至剪貼簿'));
+}
+
+function printContract() {
+  const doc = document.querySelector('.contract-doc');
+  if (!doc) return;
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html><head>
+    <meta charset="UTF-8">
+    <title>裝潢工程合約書</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Noto Serif TC', serif; font-size: 13px; line-height: 2; padding: 40px 60px; color: #1a1714; }
+      h1 { text-align: center; font-size: 20px; letter-spacing: 0.2em; margin-bottom: 8px; }
+      .doc-no { text-align: center; font-size: 11px; color: #666; margin-bottom: 32px; border-bottom: 2px solid #1a1714; padding-bottom: 16px; }
+      .sig { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-top: 60px; border-top: 1px solid #ccc; padding-top: 24px; }
+      .sig-block p { border-top: 1px solid #1a1714; padding-top: 4px; margin-top: 60px; font-size: 11px; }
+      @media print { body { padding: 20px 40px; } }
+    </style></head><body>
+    <h1>裝潢工程承攬合約書</h1>
+    <div class="doc-no">Contract No. ___________</div>
+    ${document.querySelector('.contract-body').innerHTML}
+    <div class="sig">
+      <div class="sig-block"><p>甲方（業主）簽章</p></div>
+      <div class="sig-block"><p>乙方（承包商）簽章</p></div>
+    </div>
+    </body></html>
+  `);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 600);
+}
+</script>
 </body>
 </html>
