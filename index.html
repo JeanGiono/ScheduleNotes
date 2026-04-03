@@ -1,404 +1,778 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 24H 智慧通報系統 V5.0 - 決策戰情室</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-        
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #020617;
-            color: #f1f5f9;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>裝潢工程承攬合約書</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --mid: #444;
+    --light: #888;
+    --rule: #bbb;
+    --accent: #c8a96e;
+    --bg-row: #fafaf8;
+    --border-heavy: 2px solid #1a1a1a;
+    --border-light: 1px solid #bbb;
+  }
 
-        .mono { font-family: 'JetBrains Mono', monospace; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .war-gradient {
-            background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(2, 6, 23, 1) 100%);
-        }
+  body {
+    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.8;
+    color: var(--ink);
+    background: #e8e4dc;
+  }
 
-        .news-card {
-            background: rgba(30, 41, 59, 0.4);
-            border: 1px solid rgba(51, 65, 85, 0.5);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+  .page-wrapper { max-width: 794px; margin: 0 auto; background: #fff; }
 
-        .news-card:hover {
-            border-color: #3b82f6;
-            background: rgba(30, 41, 59, 0.6);
-            transform: scale(1.01);
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.1);
-        }
+  .page {
+    width: 794px;
+    min-height: 1123px;
+    padding: 28mm 20mm 24mm 22mm;
+    position: relative;
+    background: #fff;
+    border-bottom: 1px dashed #ccc;
+  }
 
-        .active-tab {
-            background: rgba(59, 130, 246, 0.2);
-            color: #60a5fa;
-            border-left: 4px solid #3b82f6;
-        }
+  /* ── 封面標題 ── */
+  .cover-header {
+    text-align: center;
+    padding-bottom: 10mm;
+    border-bottom: var(--border-heavy);
+    margin-bottom: 8mm;
+  }
 
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-        .high-risk-pulse {
-            animation: pulse-red 2s infinite;
-        }
+  .cover-header::before {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--accent) 70%, transparent 100%);
+    margin-bottom: 6mm;
+  }
 
-        .loading-shimmer {
-            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite linear;
-        }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
+  .doc-title {
+    font-size: 22pt;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    line-height: 1.3;
+  }
 
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 10px;
-        }
-    </style>
+  .doc-subtitle {
+    font-size: 9pt;
+    color: var(--light);
+    letter-spacing: 0.3em;
+    margin-top: 2mm;
+  }
+
+  .doc-serial {
+    font-size: 8.5pt;
+    color: var(--mid);
+    margin-top: 3mm;
+    letter-spacing: 0.1em;
+  }
+
+  .doc-serial span {
+    border-bottom: 1px solid var(--rule);
+    display: inline-block;
+    min-width: 60px;
+  }
+
+  /* ── 模組標題 ── */
+  .module-title {
+    font-size: 10pt;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    color: #fff;
+    background: var(--ink);
+    padding: 3px 8px;
+    display: inline-block;
+    margin-bottom: 4mm;
+  }
+
+  .section { margin-bottom: 7mm; page-break-inside: avoid; }
+
+  /* ── 資料表格 ── */
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    margin-bottom: 2mm;
+  }
+
+  table.data-table th {
+    background: var(--bg-row);
+    font-weight: 700;
+    padding: 4px 8px;
+    border: var(--border-light);
+    white-space: nowrap;
+    width: 95px;
+    vertical-align: top;
+  }
+
+  table.data-table td {
+    padding: 4px 8px;
+    border: var(--border-light);
+    vertical-align: top;
+  }
+
+  .fill-line {
+    border-bottom: 1px solid var(--ink);
+    display: inline-block;
+    min-width: 160px;
+    height: 18px;
+    vertical-align: bottom;
+  }
+
+  .fill-short { min-width: 70px; }
+  .fill-long  { min-width: 260px; }
+
+  /* ── 付款表格 ── */
+  table.payment-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+    margin-top: 2mm;
+  }
+
+  table.payment-table th {
+    background: var(--ink);
+    color: #fff;
+    padding: 4px 6px;
+    border: 1px solid var(--ink);
+    text-align: center;
+    font-weight: 700;
+  }
+
+  table.payment-table td {
+    padding: 4px 6px;
+    border: var(--border-light);
+    text-align: center;
+  }
+
+  table.payment-table tr:nth-child(even) td { background: var(--bg-row); }
+
+  /* ── 條款 ── */
+  .clause {
+    page-break-inside: avoid;
+    margin-bottom: 5mm;
+    padding: 4mm 5mm;
+    border: var(--border-light);
+    border-left: 3px solid var(--ink);
+    background: #fefefe;
+  }
+
+  .clause h3 {
+    font-size: 10.5pt;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    margin-bottom: 2mm;
+    color: var(--ink);
+  }
+
+  .clause-hl { border-left-color: var(--accent); background: #fdf9f2; }
+  .clause-hl h3 { color: #7a4f12; }
+
+  .clause p { margin-bottom: 1.5mm; text-indent: 2em; text-align: justify; }
+  .clause ol, .clause ul { padding-left: 3.5em; margin: 1mm 0; }
+  .clause li { margin-bottom: 0.8mm; }
+
+  /* ── 標籤 ── */
+  .risk-badge {
+    display: inline-block;
+    background: #c0392b;
+    color: #fff;
+    font-size: 7.5pt;
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 700;
+  }
+
+  .notice-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 7.5pt;
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 700;
+  }
+
+  /* ── 附件 ── */
+  .attachment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4mm;
+    margin-top: 3mm;
+  }
+
+  .attachment-item {
+    border: var(--border-light);
+    padding: 4mm;
+    text-align: center;
+    background: var(--bg-row);
+  }
+
+  .checkbox-box {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--ink);
+    margin-right: 4px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+  }
+
+  .attach-note {
+    font-size: 8.5pt;
+    color: var(--mid);
+    margin-top: 2mm;
+    padding: 2mm 3mm;
+    border: 1px dashed var(--rule);
+    background: #fdfdf9;
+  }
+
+  /* ── 簽署 ── */
+  .sign-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8mm;
+    margin-top: 4mm;
+  }
+
+  .sign-block { border: var(--border-heavy); padding: 5mm 6mm; }
+
+  .sign-block h4 {
+    font-size: 10.5pt;
+    font-weight: 900;
+    border-bottom: var(--border-heavy);
+    padding-bottom: 2mm;
+    margin-bottom: 4mm;
+    letter-spacing: 0.1em;
+  }
+
+  .sign-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 3.5mm;
+    font-size: 9.5pt;
+  }
+
+  .sign-label { white-space: nowrap; margin-right: 4px; }
+  .sign-line { flex: 1; border-bottom: 1px solid var(--ink); min-width: 60px; height: 18px; }
+
+  .seal-box {
+    width: 48px;
+    height: 48px;
+    border: 1.5px dashed var(--mid);
+    margin: 3mm auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8pt;
+    color: var(--light);
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  /* ── 頁尾 ── */
+  .page-footer {
+    position: absolute;
+    bottom: 10mm;
+    left: 22mm;
+    right: 20mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 8pt;
+    color: var(--light);
+    border-top: var(--border-light);
+    padding-top: 2mm;
+  }
+
+  .divider { border: none; border-top: var(--border-light); margin: 5mm 0; }
+  .divider-accent { border-top: 2px solid var(--accent); }
+
+  .note-box {
+    background: #f5f3ee;
+    border: 1px solid #d4c9b0;
+    border-left: 3px solid var(--accent);
+    padding: 3mm 4mm;
+    font-size: 9pt;
+    color: var(--mid);
+    margin-top: 2mm;
+  }
+
+  /* ── 列印 ── */
+  @media print {
+    body { background: #fff; }
+    .page-wrapper { max-width: none; }
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 20mm 18mm 22mm 20mm;
+      border-bottom: none;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+    .section, .clause, .sign-grid, .attachment-grid { page-break-inside: avoid; }
+    @page { size: A4; margin: 0; }
+    .no-print { display: none !important; }
+  }
+
+  .print-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    font-family: "Microsoft JhengHei", Arial, sans-serif;
+    font-size: 9.5pt;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    z-index: 999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .print-btn:hover { background: #333; }
+  @media print { .print-btn { display: none; } }
+</style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
+<body>
 
-    <!-- Header -->
-    <header class="h-16 border-b border-slate-800 bg-slate-950 flex items-center justify-between px-6 z-20">
-        <div class="flex items-center space-x-3">
-            <div class="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-900/40">
-                <i class="fas fa-radar text-white animate-pulse"></i>
+<button class="print-btn no-print" onclick="window.print()">⊞ 列印 / 匯出 PDF</button>
+
+<div class="page-wrapper">
+
+<!-- ═════════ PAGE 1：封面 + 甲乙方 + 專案條款 ═════════ -->
+<div class="page">
+
+  <div class="cover-header">
+    <div class="doc-title">裝潢工程承攬合約書</div>
+    <div class="doc-subtitle">Interior Renovation Contract Agreement</div>
+    <div class="doc-serial">
+      合約編號：<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+      &ensp;簽約日期：中華民國 <span>&nbsp;&nbsp;&nbsp;&nbsp;</span> 年 <span>&nbsp;&nbsp;</span> 月 <span>&nbsp;&nbsp;</span> 日
+    </div>
+  </div>
+
+  <!-- 第一模組 -->
+  <div class="section">
+    <div class="module-title">第一模組　基本資料</div>
+
+    <table class="data-table">
+      <tbody>
+        <tr>
+          <th colspan="2" style="background:#1a1a1a;color:#fff;text-align:center;letter-spacing:0.2em;">甲 方（業主）</th>
+        </tr>
+        <tr><th>姓　　名</th><td><span class="fill-line fill-long"></span></td></tr>
+        <tr><th>身分證字號</th><td><span class="fill-line"></span></td></tr>
+        <tr><th>戶籍地址</th><td><span class="fill-line fill-long"></span></td></tr>
+        <tr><th>通訊地址</th><td><span class="fill-line fill-long"></span></td></tr>
+        <tr><th>聯絡電話</th><td><span class="fill-line"></span></td></tr>
+      </tbody>
+    </table>
+
+    <div style="height:4mm;"></div>
+
+    <table class="data-table">
+      <tbody>
+        <tr>
+          <th colspan="2" style="background:#1a1a1a;color:#fff;text-align:center;letter-spacing:0.2em;">乙 方（承包商）</th>
+        </tr>
+        <tr><th>公司名稱</th><td><span class="fill-line fill-long"></span></td></tr>
+        <tr><th>統一編號</th><td><span class="fill-line"></span></td></tr>
+        <tr><th>負 責 人</th><td><span class="fill-line"></span></td></tr>
+        <tr><th>公司地址</th><td><span class="fill-line fill-long"></span></td></tr>
+        <tr><th>聯絡電話</th><td><span class="fill-line"></span></td></tr>
+        <tr><th>室內裝修<br>許可證號</th><td><span class="fill-line"></span>&ensp;（依《建築物室內裝修管理辦法》登記）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 第二模組 -->
+  <div class="section">
+    <div class="module-title">第二模組　專案條款（客製區）</div>
+
+    <table class="data-table">
+      <tbody>
+        <tr><th>工程名稱</th><td><span class="fill-line fill-long"></span> 裝潢工程</td></tr>
+        <tr><th>工程地點</th><td><span class="fill-line fill-long"></span></td></tr>
+        <tr>
+          <th>工程範圍</th>
+          <td style="padding:5px 8px;">
+            <div style="border-bottom:1px solid #bbb;min-height:20px;margin-bottom:4px;"></div>
+            <div style="border-bottom:1px solid #bbb;min-height:20px;margin-bottom:4px;"></div>
+            <div style="border-bottom:1px solid #bbb;min-height:20px;"></div>
+          </td>
+        </tr>
+        <tr><th>工程總價</th><td>新台幣 <span class="fill-line fill-short"></span> 元整（NT$ <span class="fill-line fill-short"></span>）</td></tr>
+        <tr><th>開工日期</th><td>中華民國 <span class="fill-line" style="min-width:40px;"></span> 年 <span class="fill-line" style="min-width:24px;"></span> 月 <span class="fill-line" style="min-width:24px;"></span> 日</td></tr>
+        <tr><th>預定完工</th><td>中華民國 <span class="fill-line" style="min-width:40px;"></span> 年 <span class="fill-line" style="min-width:24px;"></span> 月 <span class="fill-line" style="min-width:24px;"></span> 日</td></tr>
+        <tr><th>施工天數</th><td>預定施工日曆天 <span class="fill-line" style="min-width:40px;"></span> 天（含例假日）</td></tr>
+      </tbody>
+    </table>
+
+    <div style="font-size:9.5pt;font-weight:700;margin:3mm 0 2mm;letter-spacing:0.08em;">付款分期計畫表</div>
+    <table class="payment-table">
+      <thead>
+        <tr>
+          <th>期別</th>
+          <th>付款條件 / 付款時機</th>
+          <th>比例</th>
+          <th>金額（新台幣）</th>
+          <th>備　　注</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>第一期</td>
+          <td>簽約時（訂金）</td>
+          <td><span class="fill-line" style="min-width:32px;"></span> %</td>
+          <td>NT$ <span class="fill-line" style="min-width:55px;"></span></td>
+          <td>不超過總價 30%</td>
+        </tr>
+        <tr>
+          <td>第二期</td>
+          <td>動工進場後</td>
+          <td><span class="fill-line" style="min-width:32px;"></span> %</td>
+          <td>NT$ <span class="fill-line" style="min-width:55px;"></span></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>第三期</td>
+          <td>工程進度達 50% 驗收通過</td>
+          <td><span class="fill-line" style="min-width:32px;"></span> %</td>
+          <td>NT$ <span class="fill-line" style="min-width:55px;"></span></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>第四期</td>
+          <td>工程進度達 80% 驗收通過</td>
+          <td><span class="fill-line" style="min-width:32px;"></span> %</td>
+          <td>NT$ <span class="fill-line" style="min-width:55px;"></span></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>第五期</td>
+          <td>竣工驗收通過（尾款）</td>
+          <td><span class="fill-line" style="min-width:32px;"></span> %</td>
+          <td>NT$ <span class="fill-line" style="min-width:55px;"></span></td>
+          <td>建議不低於 5%</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="text-align:right;font-weight:700;">合　計</td>
+          <td style="font-weight:700;">100%</td>
+          <td style="font-weight:700;">NT$ <span class="fill-line" style="min-width:55px;"></span></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-footer">
+    <span>裝潢工程承攬合約書</span>
+    <span>甲方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
+    <span>乙方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
+    <span>第 1 頁 / 共 4 頁</span>
+  </div>
+</div>
+
+<!-- ═════════ PAGE 2：標準條款 第一至六條 ═════════ -->
+<div class="page">
+
+  <div class="module-title">第三模組　標準條款</div>
+
+  <div class="clause">
+    <h3>第一條　工程範圍與內容</h3>
+    <p>乙方承攬甲方委託之室內裝修工程（以下簡稱「本工程」），工程範圍以雙方簽認之工程報價單（附件一）及設計圖說（附件二）為準。</p>
+    <p>工程範圍如有疑義，以設計圖說為優先，設計圖說未載明者，以工程報價單為準；兩者均未載明者，以書面協議補充之。</p>
+    <p>乙方應依建築技術規則、內政部頒訂相關法規及台灣現行國家標準（CNS）施作，並取得依法應辦理之相關許可。</p>
+  </div>
+
+  <div class="clause">
+    <h3>第二條　工期與完工期限</h3>
+    <p>乙方應於開工日起算之約定施工日曆天內完成本工程，並辦理驗收交付。</p>
+    <p>下列情形發生時，經甲方書面確認，得合理展延工期，並不視為乙方違約：</p>
+    <ol>
+      <li>因第十一條所定不可抗力事由；</li>
+      <li>因甲方指示設計變更或追加工程；</li>
+      <li>因甲方未依約支付工程款，致乙方依法停工；</li>
+      <li>政府機關命令停工或其他非可歸責於乙方之情事。</li>
+    </ol>
+    <p>工期展延申請，乙方應於事由發生後 7 個工作日內以書面通知甲方，逾期不得主張展延。</p>
+  </div>
+
+  <div class="clause">
+    <h3>第三條　工程價款與付款方式</h3>
+    <p>本工程總價依第二模組專案條款付款分期計畫表所訂金額為準，付款方式採「階段驗收付款機制」。</p>
+    <ol>
+      <li><strong>驗收付款原則：</strong>每期款項以甲方對應階段工程驗收簽認後，應於 7 個工作日內完成匯款或現金給付，甲方不得無故拒絕驗收。</li>
+      <li><strong>驗收爭議：</strong>如甲方對工程品質有疑義，應以書面載明具體瑕疵項目通知乙方；乙方應於收到通知後 7 個工作日內完成修繕，修繕完成後甲方應即辦理複驗。</li>
+      <li><strong>付款遲延：</strong>甲方逾期未付工程款者，每逾一日按遲付金額萬分之三計算遲延利息；逾期超過 14 日者，乙方得停工並書面通知甲方，停工期間工期相應展延，相關損失由甲方負擔。</li>
+      <li><strong>發票開立：</strong>乙方應依《加值型及非加值型營業稅法》規定開立統一發票；如乙方為免稅銷售者，應依法開立收據。</li>
+    </ol>
+  </div>
+
+  <div class="clause">
+    <h3>第四條　設計變更與追加減帳</h3>
+    <p>本工程施工期間，如甲方提出設計變更或追加減帳事項，需依下列程序辦理，否則不生效力：</p>
+    <ol>
+      <li>甲方以書面提出變更需求；</li>
+      <li>乙方於 5 個工作日內提供書面變更估價單，載明工程項目、費用增減及工期影響；</li>
+      <li>雙方簽署「工程變更確認單」後，方得施工；</li>
+      <li>口頭指示概不列為有效變更依據。</li>
+    </ol>
+    <p>追加工程款應依前項確認單所訂金額計算，並納入付款分期計畫中；減帳工程款則於最終驗收時統一結算。</p>
+  </div>
+
+  <div class="clause">
+    <h3>第五條　材料與施工品質</h3>
+    <p>乙方使用之材料應符合附件三（材料設備表）所載規格，且均需符合台灣現行 CNS 國家標準、環保法規及建築技術規則之相關規定。</p>
+    <p>甲方得隨時進場查驗材料規格及施工品質。如發現材料不符合約規範，乙方應於甲方書面通知後 3 個工作日內更換；逾期不換者，甲方得扣除對應期款，或自行採購並向乙方求償差價。</p>
+    <p>本工程使用之油漆、黏著劑、板材等建材，其甲醛含量、揮發性有機化合物（VOC）排放量不得超過《室內空氣品質管理法》所定相關標準。</p>
+  </div>
+
+  <div class="clause">
+    <h3>第六條　驗收與交付</h3>
+    <p>本工程採分階段驗收，驗收節點依第二模組付款分期計畫表所列條件執行，每次驗收雙方均應簽署「階段驗收紀錄表」。</p>
+    <p><strong>竣工驗收程序：</strong></p>
+    <ol>
+      <li>乙方完工後以書面通知甲方，甲方應於收到通知後 5 個工作日內進行最終驗收；</li>
+      <li>驗收合格，雙方簽署「竣工驗收證明書」，乙方憑此請領尾款；</li>
+      <li>驗收發現缺失，乙方應於約定期限內完成改善，改善後進行複驗；</li>
+      <li>甲方逾期不辦理驗收，視為驗收通過，乙方得請領尾款。</li>
+    </ol>
+  </div>
+
+  <div class="page-footer">
+    <span>裝潢工程承攬合約書</span>
+    <span>甲方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
+    <span>乙方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
+    <span>第 2 頁 / 共 4 頁</span>
+  </div>
+</div>
+
+<!-- ═════════ PAGE 3：風險控管條款 第七至十二條 ═════════ -->
+<div class="page">
+
+  <div class="module-title" style="background:#7a4f12;">⚠ 風險控管強化條款</div>
+
+  <div class="clause clause-hl">
+    <h3>第七條　保固條款 <span class="notice-badge">重要</span></h3>
+    <p>乙方應自竣工驗收通過之日起，對本工程提供至少一（1）年之保固服務，保固期間因施工瑕疵或材料品質不符所致之損壞，乙方應無償修繕。</p>
+    <p><strong>保固範圍包含：</strong>木作工程、泥作工程、水電配管配線、油漆粉刷、輕隔間、天花板、地板鋪設及固定式家具等。</p>
+    <p><strong>下列情形不在保固範圍：</strong></p>
+    <ol>
+      <li>因甲方或第三人使用不當、人為破壞所致之損壞；</li>
+      <li>因不可抗力事由（地震、颱風等天災）所致之損壞；</li>
+      <li>甲方自行改裝或委由第三方施作所造成之損壞；</li>
+      <li>正常磨損及自然老化。</li>
+    </ol>
+    <p>保固期滿後，乙方仍得依有償方式提供維修服務。</p>
+  </div>
+
+  <div class="clause clause-hl">
+    <h3>第八條　違約責任 <span class="risk-badge">關鍵條款</span></h3>
+    <p><strong>（一）乙方違約責任：</strong></p>
+    <ol>
+      <li><strong>工期延遲：</strong>乙方無正當理由未能於約定期限完工者，每逾一日，應按工程總價之千分之一（‰1）計算違約金，惟違約金總額以不超過工程總價之 10% 為上限；超過 30 日者，甲方得終止合約並請求損害賠償。</li>
+      <li><strong>施工瑕疵未改善：</strong>乙方於保固期內未依時修繕者，甲方得委由第三方施作，費用由乙方負擔，並得向乙方主張費用加計 20% 之管理費。</li>
+      <li><strong>擅自停工：</strong>乙方非因可歸責於甲方之事由擅自停工逾 7 日者，視為乙方違約，甲方得終止合約並請求損害賠償。</li>
+    </ol>
+    <p><strong>（二）甲方違約責任：</strong></p>
+    <ol>
+      <li><strong>付款遲延：</strong>依第三條第三款計算遲延利息；甲方逾期付款超過 30 日者，乙方得終止合約並請求應付款項及損害賠償。</li>
+      <li><strong>無正當理由終止：</strong>甲方如非因可歸責於乙方之事由而終止合約，應賠償乙方已完成工程費用，並支付工程總價 10% 之違約金。</li>
+    </ol>
+    <p>雙方同意上述違約金為損害賠償總額預定性質，法院得依情事酌減之。</p>
+  </div>
+
+  <div class="clause clause-hl">
+    <h3>第九條　預付款與履約保障 <span class="notice-badge">保護甲方</span></h3>
+    <p>本合約採下列履約保障措施，以平衡雙方風險：</p>
+    <ol>
+      <li><strong>訂金上限：</strong>簽約時之第一期款（訂金）不得超過工程總價之 30%；如有超過，視為無效超額部分，甲方得拒絕給付。</li>
+      <li><strong>分段付款保護：</strong>付款以「階段驗收通過」為前提，未驗收通過前甲方無給付下一期款之義務。</li>
+      <li>
+        <strong>履約保障（擇一）：</strong>
+        <ul>
+          <li><span class="checkbox-box"></span> 乙方提供銀行或保險公司開立之「履約保證書」；</li>
+          <li><span class="checkbox-box"></span> 各期款設第三方信託帳戶，依驗收結果分批撥付；</li>
+          <li><span class="checkbox-box"></span> 免附加履約保障（雙方合意）。</li>
+        </ul>
+      </li>
+      <li><strong>材料預付款：</strong>甲方如預付特殊訂製材料費，乙方應提供相應訂購單據（賣方單據）為憑。</li>
+    </ol>
+  </div>
+
+  <div class="clause">
+    <h3>第十條　爭議處理</h3>
+    <p>本合約適用中華民國法律。雙方如有爭議，應先本於誠信原則以協商方式解決；協商不成，得依下列方式處理：</p>
+    <ol>
+      <li><strong>調解：</strong>得向工程所在地之鄉鎮市調解委員會或消費者保護機關申請調解；</li>
+      <li><strong>訴訟：</strong>以工程所在地之地方法院為第一審管轄法院。</li>
+    </ol>
+  </div>
+
+  <div class="clause">
+    <h3>第十一條　不可抗力</h3>
+    <p>下列情形發生致使一方無法履行義務者，不構成違約，但應於事由發生後 3 日內書面通知對方：</p>
+    <ol>
+      <li>颱風、地震、洪水、土石流等天然災害；</li>
+      <li>戰爭、暴動、政府機關命令（如封城、禁建令）；</li>
+      <li>全國性罷工、重大傳染病疫情（依行政院公告為準）；</li>
+      <li>其他雙方均無法合理預見及控制之事由。</li>
+    </ol>
+    <p>不可抗力情形消滅後，雙方應立即恢復履約，並協商調整工期及相關費用。</p>
+  </div>
+
+  <div class="clause">
+    <h3>第十二條　其他約定</h3>
+    <ol>
+      <li><strong>合約完整性：</strong>本合約連同附件構成雙方完整合意，其效力優於雙方先前任何口頭或書面協議。</li>
+      <li><strong>合約修改：</strong>任何修改均需雙方書面簽認，方生效力。</li>
+      <li><strong>可分割性：</strong>本合約任一條款被認定無效，不影響其餘條款之效力。</li>
+      <li><strong>個人資料保護：</strong>雙方同意依《個人資料保護法》規定，僅將本合約所載個人資料用於合約履行目的，不得洩漏或作其他用途。</li>
+      <li><strong>合約份數：</strong>本合約一式兩份，甲乙方各執一份為憑。</li>
+    </ol>
+    <div style="margin-top:3mm;">
+      <div style="font-weight:700;font-size:9.5pt;margin-bottom:1.5mm;">其他特別約定事項：</div>
+      <div style="border-bottom:1px solid #bbb;min-height:20px;margin-bottom:3mm;"></div>
+      <div style="border-bottom:1px solid #bbb;min-height:20px;margin-bottom:3mm;"></div>
+      <div style="border-bottom:1px solid #bbb;min-height:20px;"></div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>裝潢工程承攬合約書</span>
+    <span>甲方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
+    <span>乙方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
+    <span>第 3 頁 / 共 4 頁</span>
+  </div>
+</div>
+
+<!-- ═════════ PAGE 4：附件 + 簽署區 ═════════ -->
+<div class="page">
+
+  <!-- 第四模組：附件 -->
+  <div class="section">
+    <div class="module-title">第四模組　附件清單</div>
+
+    <div class="attachment-grid">
+      <div class="attachment-item">
+        <div><span class="checkbox-box"></span><strong>附件一</strong></div>
+        <div style="margin-top:2mm;font-size:9pt;">工程報價單</div>
+        <div style="font-size:8pt;color:var(--light);margin-top:1mm;">含項目、單價、數量、小計</div>
+      </div>
+      <div class="attachment-item">
+        <div><span class="checkbox-box"></span><strong>附件二</strong></div>
+        <div style="margin-top:2mm;font-size:9pt;">設計圖說</div>
+        <div style="font-size:8pt;color:var(--light);margin-top:1mm;">平面圖、立面圖、施工詳圖</div>
+      </div>
+      <div class="attachment-item">
+        <div><span class="checkbox-box"></span><strong>附件三</strong></div>
+        <div style="margin-top:2mm;font-size:9pt;">材料設備表</div>
+        <div style="font-size:8pt;color:var(--light);margin-top:1mm;">品牌、型號、規格、產地</div>
+      </div>
+    </div>
+
+    <div class="attach-note">
+      ※ 上述勾選附件與本合約書具同等法律效力，如有牴觸，以本合約正文為準。附件如有修改，需另行書面協議簽認始生效力。
+    </div>
+  </div>
+
+  <hr class="divider divider-accent">
+
+  <!-- 第五模組：簽署 -->
+  <div class="section">
+    <div class="module-title">第五模組　合約簽署</div>
+
+    <div class="note-box" style="margin-bottom:5mm;">
+      本合約於中華民國 <span class="fill-line" style="min-width:40px;"></span> 年 <span class="fill-line" style="min-width:24px;"></span> 月 <span class="fill-line" style="min-width:24px;"></span> 日，經甲乙雙方詳閱全文，確認同意後簽署生效。
+    </div>
+
+    <div class="sign-grid">
+      <!-- 甲方 -->
+      <div class="sign-block">
+        <h4>甲　方（業主）</h4>
+        <div class="sign-row"><span class="sign-label">姓　　名：</span><span class="sign-line"></span></div>
+        <div class="sign-row"><span class="sign-label">身分證號：</span><span class="sign-line"></span></div>
+        <div class="sign-row"><span class="sign-label">聯絡電話：</span><span class="sign-line"></span></div>
+        <div class="sign-row"><span class="sign-label">簽　　名：</span><span class="sign-line" style="min-height:32px;"></span></div>
+        <div class="sign-row">
+          <span class="sign-label">日　　期：</span>
+          <span style="font-size:9pt;">民國 <span class="fill-line" style="min-width:30px;"></span> 年 <span class="fill-line" style="min-width:22px;"></span> 月 <span class="fill-line" style="min-width:22px;"></span> 日</span>
+        </div>
+        <div style="text-align:center;margin-top:3mm;">
+          <div class="seal-box">蓋印<br>章處</div>
+          <div style="font-size:8pt;color:var(--light);margin-top:1mm;">（甲方印鑑）</div>
+        </div>
+      </div>
+
+      <!-- 乙方 -->
+      <div class="sign-block">
+        <h4>乙　方（承包商）</h4>
+        <div class="sign-row"><span class="sign-label">公司名稱：</span><span class="sign-line"></span></div>
+        <div class="sign-row"><span class="sign-label">統一編號：</span><span class="sign-line"></span></div>
+        <div class="sign-row"><span class="sign-label">負 責 人：</span><span class="sign-line"></span></div>
+        <div class="sign-row"><span class="sign-label">簽　　名：</span><span class="sign-line" style="min-height:32px;"></span></div>
+        <div class="sign-row">
+          <span class="sign-label">日　　期：</span>
+          <span style="font-size:9pt;">民國 <span class="fill-line" style="min-width:30px;"></span> 年 <span class="fill-line" style="min-width:22px;"></span> 月 <span class="fill-line" style="min-width:22px;"></span> 日</span>
+        </div>
+        <div style="text-align:center;margin-top:3mm;">
+          <div style="display:flex;justify-content:center;gap:6mm;">
+            <div>
+              <div class="seal-box">公司<br>大章</div>
+              <div style="font-size:8pt;color:var(--light);margin-top:1mm;text-align:center;">公司大印</div>
             </div>
             <div>
-                <h1 class="text-lg font-bold tracking-tight">AI 24H <span class="text-blue-500">NEWS INTEL</span></h1>
-                <p class="text-[10px] text-slate-500 mono font-bold leading-none">STRATEGIC_COMMAND // TW_NODE</p>
+              <div class="seal-box">負責人<br>小章</div>
+              <div style="font-size:8pt;color:var(--light);margin-top:1mm;text-align:center;">負責人章</div>
             </div>
+          </div>
         </div>
-
-        <div class="flex items-center space-x-4">
-            <div id="statusIndicator" class="hidden md:flex items-center space-x-2 px-3 py-1 bg-slate-900 rounded-full border border-slate-800">
-                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span class="text-[10px] mono text-slate-400 uppercase">System_Active</span>
-            </div>
-            <button onclick="syncNews()" id="syncBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all flex items-center space-x-2 shadow-lg shadow-blue-900/20">
-                <i class="fas fa-sync-alt" id="syncIcon"></i>
-                <span>掃描最新情報</span>
-            </button>
-        </div>
-    </header>
-
-    <div class="flex flex-1 overflow-hidden">
-        
-        <!-- Left: Filters -->
-        <aside class="w-64 border-r border-slate-800 bg-slate-950/50 flex flex-col">
-            <div class="p-6 space-y-6 flex-1 overflow-y-auto">
-                <div>
-                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">情報過濾</h3>
-                    <div class="space-y-1" id="filterContainer">
-                        <button onclick="setFilter('all')" class="tab-btn active-tab w-full flex items-center px-4 py-3 rounded-md text-sm transition-all">
-                            <i class="fas fa-layer-group mr-3 opacity-70"></i> 全部情報
-                        </button>
-                        <button onclick="setFilter('finance')" class="tab-btn w-full flex items-center px-4 py-3 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition-all">
-                            <i class="fas fa-chart-line mr-3 opacity-70"></i> 金融與政策
-                        </button>
-                        <button onclick="setFilter('tech')" class="tab-btn w-full flex items-center px-4 py-3 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition-all">
-                            <i class="fas fa-microchip mr-3 opacity-70"></i> 科技產業趨勢
-                        </button>
-                    </div>
-                </div>
-
-                <div class="pt-6 border-t border-slate-800">
-                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">系統提示</h3>
-                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                        <p class="text-[11px] text-slate-400 leading-relaxed italic">
-                            "點擊新聞卡片，AI 將自動生成深度分析，您可一鍵將結果分享至 LINE 給團隊。"
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="p-4 bg-slate-950 border-t border-slate-800 text-[9px] text-slate-600 mono text-center">
-                AI_ENGINE: GEMINI_2.5_FLASH
-            </div>
-        </aside>
-
-        <!-- Center: News Stream -->
-        <main class="flex-1 overflow-y-auto bg-slate-900/20 p-6 custom-scrollbar" id="newsFeed">
-            <div id="emptyState" class="h-full flex flex-col items-center justify-center text-slate-600 space-y-4">
-                <i class="fas fa-tower-broadcast text-5xl opacity-20 mb-4"></i>
-                <div class="text-center">
-                    <p class="font-bold text-lg text-slate-400">尚未同步外部情報</p>
-                    <p class="text-sm">點擊上方「掃描最新情報」按鈕啟動聯網抓取</p>
-                </div>
-            </div>
-        </main>
-
-        <!-- Right: AI Insight Panel -->
-        <aside class="w-[400px] border-l border-slate-800 bg-slate-950/80 backdrop-blur-md overflow-y-auto custom-scrollbar" id="aiPanel">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-8">
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-brain text-blue-500"></i>
-                        <h3 class="font-bold text-sm tracking-wide">AI 深度情報判讀</h3>
-                    </div>
-                    <span class="text-[9px] mono bg-slate-800 px-2 py-1 rounded text-slate-500 uppercase">Intelligence_Center</span>
-                </div>
-
-                <div id="aiAnalysisResult" class="space-y-8">
-                    <!-- Default state -->
-                    <div class="text-center py-24 opacity-20">
-                        <i class="fas fa-file-invoice text-5xl mb-6"></i>
-                        <p class="text-sm px-12">選取左側情資卡片<br>啟動智慧分析矩陣</p>
-                    </div>
-                </div>
-            </div>
-        </aside>
+      </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 transform translate-y-20 opacity-0 transition-all duration-500">
-        <div class="bg-blue-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center space-x-3 font-bold text-sm">
-            <i class="fas fa-bolt text-yellow-400"></i>
-            <span id="toastMsg">系統訊息</span>
-        </div>
+    <!-- 見證人 -->
+    <div style="margin-top:6mm;border:var(--border-light);padding:4mm 5mm;">
+      <div style="font-weight:700;font-size:9.5pt;margin-bottom:3mm;letter-spacing:0.1em;">見 證 人（選填）</div>
+      <div style="display:flex;gap:10mm;">
+        <div style="flex:1;"><div class="sign-row"><span class="sign-label">姓名：</span><span class="sign-line"></span></div></div>
+        <div style="flex:1;"><div class="sign-row"><span class="sign-label">身分證號：</span><span class="sign-line"></span></div></div>
+        <div style="flex:1;"><div class="sign-row"><span class="sign-label">簽名：</span><span class="sign-line"></span></div></div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        const apiKey = ""; 
-        let newsData = [];
-        let activeCategory = 'all';
+  <hr class="divider">
 
-        // --- 核心：獲取即時新聞 (含自動備援) ---
-        async function syncNews() {
-            const btn = document.getElementById('syncBtn');
-            const icon = document.getElementById('syncIcon');
-            const status = document.getElementById('statusIndicator');
-            
-            btn.disabled = true;
-            icon.classList.add('fa-spin');
-            status.innerHTML = `<div class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></div><span class="text-[10px] mono text-blue-400">SCANNING_LIVE_TW_WEB...</span>`;
-            showToast("正在搜尋台灣今日重大即時情報...");
+  <div style="font-size:8pt;color:var(--light);line-height:1.6;text-align:justify;">
+    <strong style="color:var(--mid);">法律聲明：</strong>本合約書範本僅供參考，各條款文字應依個案情形調整。如涉及高額工程或複雜糾紛，建議委任律師審閱。本文件依中華民國《民法》第四百九十條以下承攬相關規定及《消費者保護法》相關規定製作，兼顧業主與承包商雙方合理權益。
+  </div>
 
-            const query = `請檢索台灣今日(2026年4月3日)最新的重大金融、半導體、AI、政府財經政策新聞。
-            請整理成 JSON 格式回傳陣列，內容必須精簡準確。每個物件包含：
-            id (數字), title (標題), source (媒體來源), category (finance/tech/policy), level (high/medium/low), time (HH:mm), summary (摘要50字), details (詳細內容150字)。
-            僅輸出 JSON。`;
+  <div class="page-footer">
+    <span>裝潢工程承攬合約書</span>
+    <span>甲方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
+    <span>乙方簽章：<span style="display:inline-block;width:50px;border-bottom:1px solid #bbb;"></span></span>
+    <span>第 4 頁 / 共 4 頁</span>
+  </div>
+</div>
 
-            try {
-                const response = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: query }] }],
-                        tools: [{ "google_search": {} }],
-                        generationConfig: { responseMimeType: "application/json" }
-                    })
-                });
-
-                const data = await response.json();
-                let resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                
-                if (resultText) {
-                    const fetchedNews = JSON.parse(resultText);
-                    newsData = [...fetchedNews, ...newsData].slice(0, 15); 
-                } else {
-                    throw new Error("API No Result");
-                }
-            } catch (err) {
-                console.warn("API Error, using fallback data:", err);
-                newsData = getFallbackNews();
-                showToast("連線受限，已載入備援預測情資", "fas fa-exclamation-triangle");
-            } finally {
-                btn.disabled = false;
-                icon.classList.remove('fa-spin');
-                status.innerHTML = `<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] mono text-slate-400">NODE_ONLINE</span>`;
-                renderNews();
-                document.getElementById('emptyState').classList.add('hidden');
-            }
-        }
-
-        function renderNews() {
-            const feed = document.getElementById('newsFeed');
-            const filtered = activeCategory === 'all' ? newsData : newsData.filter(n => n.category === activeCategory);
-
-            if (filtered.length === 0) {
-                feed.innerHTML = `<div class="h-full flex items-center justify-center opacity-30 italic">目前分類下暫無更新</div>`;
-                return;
-            }
-
-            feed.innerHTML = filtered.map((item, idx) => `
-                <div class="news-card p-6 rounded-2xl mb-4 cursor-pointer flex items-start space-x-5 animate-in fade-in slide-in-from-bottom-4 duration-500" 
-                     style="animation-delay: ${idx * 50}ms"
-                     onclick="analyzeDeeply(${JSON.stringify(item).replace(/"/g, '&quot;')})">
-                    <div class="flex-1">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center space-x-3">
-                                <span class="text-[9px] mono font-bold px-2 py-0.5 rounded border ${getLevelStyles(item.level)}">
-                                    ${item.level.toUpperCase()} RISK
-                                </span>
-                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-tight">${item.source} • ${item.time}</span>
-                            </div>
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-100 group-hover:text-blue-400 transition-colors leading-tight">${item.title}</h3>
-                        <p class="text-sm text-slate-400 mt-3 line-clamp-2 leading-relaxed font-light">${item.summary}</p>
-                    </div>
-                    <div class="flex-shrink-0 self-center">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-800 group-hover:bg-blue-600/20 transition-all">
-                            <i class="fas fa-chevron-right text-slate-600 group-hover:text-blue-400 text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function analyzeDeeply(item) {
-            const resultPanel = document.getElementById('aiAnalysisResult');
-            resultPanel.innerHTML = `
-                <div class="space-y-8">
-                    <div class="h-6 w-1/3 bg-slate-800 animate-pulse rounded"></div>
-                    <div class="space-y-3">
-                        <div class="h-4 w-full bg-slate-800 animate-pulse rounded"></div>
-                        <div class="h-4 w-full bg-slate-800 animate-pulse rounded"></div>
-                        <div class="h-4 w-2/3 bg-slate-800 animate-pulse rounded"></div>
-                    </div>
-                    <div class="h-32 w-full bg-slate-800 animate-pulse rounded"></div>
-                </div>
-            `;
-
-            const prompt = `深度分析這則新聞：\n標題：${item.title}\n詳細內容：${item.details}\n
-            請以專業投資顧問視角回傳 JSON：
-            - impact: 對產業或市場的具體影響分析 (60字)
-            - mood: 利多/利空/中立
-            - score: 0-100 (影響力權重)
-            - action: 給決策者的三點行動建議 (陣列)`;
-
-            try {
-                const response = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: "application/json" }
-                    })
-                });
-
-                const data = await response.json();
-                const analysis = JSON.parse(data.candidates[0].content.parts[0].text);
-
-                resultPanel.innerHTML = `
-                    <div class="animate-in fade-in slide-in-from-right-4 duration-500 space-y-8 pb-10">
-                        <div>
-                            <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest block mb-2">Selected_Intelligence</span>
-                            <h4 class="text-xl font-bold leading-tight text-white">${item.title}</h4>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-                                <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">市場傾向</p>
-                                <p class="text-lg font-bold ${analysis.mood === '利多' ? 'text-green-500' : analysis.mood === '利空' ? 'text-red-500' : 'text-yellow-500'}">${analysis.mood}</p>
-                            </div>
-                            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-                                <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">權重評分</p>
-                                <p class="text-lg font-bold mono text-blue-400">${analysis.score}/100</p>
-                            </div>
-                        </div>
-
-                        <div class="bg-blue-600/5 border border-blue-600/20 p-5 rounded-2xl">
-                            <p class="text-[10px] text-blue-400 mb-3 uppercase font-bold tracking-widest">影響力評估</p>
-                            <p class="text-sm text-slate-300 leading-relaxed">${analysis.impact}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-[10px] text-slate-500 mb-4 uppercase font-bold tracking-widest">決策行動路徑</p>
-                            <div class="space-y-3">
-                                ${analysis.action.map(a => `
-                                    <div class="flex items-start space-x-3 bg-slate-900/40 p-3 rounded-xl border border-slate-800/50">
-                                        <i class="fas fa-chevron-right text-blue-600 mt-1 text-[10px]"></i>
-                                        <p class="text-[11px] text-slate-400 leading-tight">${a}</p>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-
-                        <!-- NEW: Share to LINE Button -->
-                        <button onclick="shareToLine('${item.title}', '${analysis.mood}', '${analysis.impact}', '${analysis.action.join('；')}')" 
-                                class="w-full bg-[#06C755] hover:bg-[#05b34d] text-white py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center space-x-3 shadow-xl shadow-[#06C755]/10">
-                            <i class="fab fa-line text-2xl"></i>
-                            <span>分享情報至 LINE</span>
-                        </button>
-                    </div>
-                `;
-            } catch (err) {
-                resultPanel.innerHTML = `<div class="text-center py-10 text-red-400 text-sm">解析模組暫時無法連線</div>`;
-            }
-        }
-
-        // --- 核心：分享至 LINE ---
-        function shareToLine(title, mood, impact, actions) {
-            const message = `【AI 24H 智慧通報】\n\n📌 標題：${title}\n📊 市場傾向：${mood}\n\n🔍 AI 深度影響評估：\n${impact}\n\n💡 決策建議：\n${actions.replace(/；/g, '\n- ')}\n\n--- 來自 AI 智慧通報戰情室 ---`;
-            const encodedMsg = encodeURIComponent(message);
-            const lineUrl = `https://line.me/R/msg/text/?${encodedMsg}`;
-            
-            // 開啟 LINE 分享
-            window.open(lineUrl, '_blank');
-            showToast("正在開啟 LINE 分享介面...");
-        }
-
-        // --- 輔助函式 ---
-        function setFilter(cat) {
-            activeCategory = cat;
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active-tab');
-                btn.classList.add('text-slate-400');
-            });
-            event.currentTarget.classList.add('active-tab');
-            event.currentTarget.classList.remove('text-slate-400');
-            renderNews();
-        }
-
-        function getLevelStyles(level) {
-            if (level === 'high') return 'text-red-400 border-red-500/30 bg-red-500/10 high-risk-pulse';
-            if (level === 'medium') return 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10';
-            return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
-        }
-
-        function showToast(msg, icon = "fas fa-bolt") {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastMsg').innerText = msg;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3500);
-        }
-
-        function getFallbackNews() {
-            return [
-                { id: 1, title: "台積電美股 ADR 盤後勁揚，帶動台股夜盤突破 21000 點", source: "經濟日報", category: "tech", level: "high", time: "09:02", summary: "受 2 奈米進度超前消息激勵，台積電相關供應鏈今日早盤預計集體跳空走高。", details: "台積電昨晚在美股交易時段表現強勁，市場分析師指出，隨著 AI 晶片需求持續擴大，台積電先進製程產能已滿載至 2026 年，將帶動相關 IP 及設備廠商營收創高。" },
-                { id: 2, title: "金管會副主委：將啟動新一輪金融數位轉型指引，開放 AI 徵信", source: "工商時報", category: "policy", level: "medium", time: "10:15", summary: "政府擬於下季鬆綁金融資料使用限制，有利於純網銀與傳統銀行整合生成式 AI。", details: "此次指引修訂重點在於確保數據隱私的前提下，允許金融機構使用外部大語言模型進行客戶信用分析與防制洗錢，預計將大幅降低銀行合規成本並提升審核效率。" },
-                { id: 3, title: "輝達(NVIDIA) 宣佈與鴻海擴大全球 AI 算力中心合作計畫", source: "科技新報", category: "tech", level: "high", time: "08:45", summary: "雙方將在高雄及墨西哥建立大型 GB200 算力叢集，鞏固台灣 AI 硬體中樞地位。", details: "此項合作案不僅包含硬體組裝，更涉及邊緣運算軟體開發。鴻海將以此轉型為 AI 系統集成服務商，預計毛利率將有感提升，並帶動散熱、滑軌等組件需求。" }
-            ];
-        }
-
-        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
-            try {
-                const res = await fetch(url, options);
-                if (!res.ok) throw new Error(res.statusText);
-                return res;
-            } catch (err) {
-                if (retries <= 0) throw err;
-                await new Promise(r => setTimeout(r, backoff));
-                return fetchWithRetry(url, options, retries - 1, backoff * 2);
-            }
-        }
-    </script>
+</div><!-- end page-wrapper -->
 </body>
 </html>
-
