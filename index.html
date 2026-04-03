@@ -3,248 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>行程管理工具</title>
-    <link rel="stylesheet" href="style.css">
+    <title>AI 24H 智慧通報系統 V5.0 - 決策戰情室</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #020617;
+            color: #f1f5f9;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .war-gradient {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(2, 6, 23, 1) 100%);
+        }
+
+        .news-card {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .news-card:hover {
+            border-color: #3b82f6;
+            background: rgba(30, 41, 59, 0.6);
+            transform: scale(1.01);
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.1);
+        }
+
+        .active-tab {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border-left: 4px solid #3b82f6;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .high-risk-pulse {
+            animation: pulse-red 2s infinite;
+        }
+
+        .loading-shimmer {
+            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+    </style>
 </head>
-<body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1 class="app-title">行程管理工具</h1>
-                <div class="header-controls">
-                    <button class="btn btn--secondary theme-toggle" id="themeToggle" aria-label="切換主題">
-                        🌙
-                    </button>
-                    <button class="btn btn--primary" id="addEventBtn">新增事件</button>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="h-16 border-b border-slate-800 bg-slate-950 flex items-center justify-between px-6 z-20">
+        <div class="flex items-center space-x-3">
+            <div class="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-900/40">
+                <i class="fas fa-radar text-white animate-pulse"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight">AI 24H <span class="text-blue-500">NEWS INTEL</span></h1>
+                <p class="text-[10px] text-slate-500 mono font-bold leading-none">STRATEGIC_COMMAND // TW_NODE</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <div id="statusIndicator" class="hidden md:flex items-center space-x-2 px-3 py-1 bg-slate-900 rounded-full border border-slate-800">
+                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span class="text-[10px] mono text-slate-400 uppercase">System_Active</span>
+            </div>
+            <button onclick="syncNews()" id="syncBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-lg font-bold text-sm transition-all flex items-center space-x-2 shadow-lg shadow-blue-900/20">
+                <i class="fas fa-sync-alt" id="syncIcon"></i>
+                <span>掃描最新情報</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Left: Filters -->
+        <aside class="w-64 border-r border-slate-800 bg-slate-950/50 flex flex-col">
+            <div class="p-6 space-y-6 flex-1 overflow-y-auto">
+                <div>
+                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">情報過濾</h3>
+                    <div class="space-y-1" id="filterContainer">
+                        <button onclick="setFilter('all')" class="tab-btn active-tab w-full flex items-center px-4 py-3 rounded-md text-sm transition-all">
+                            <i class="fas fa-layer-group mr-3 opacity-70"></i> 全部情報
+                        </button>
+                        <button onclick="setFilter('finance')" class="tab-btn w-full flex items-center px-4 py-3 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition-all">
+                            <i class="fas fa-chart-line mr-3 opacity-70"></i> 金融與政策
+                        </button>
+                        <button onclick="setFilter('tech')" class="tab-btn w-full flex items-center px-4 py-3 rounded-md text-sm text-slate-400 hover:bg-slate-800 transition-all">
+                            <i class="fas fa-microchip mr-3 opacity-70"></i> 科技產業趨勢
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </header>
 
-        <!-- Navigation -->
-        <nav class="nav-bar">
-            <div class="nav-controls">
-                <button class="btn btn--outline nav-btn" id="prevBtn">&lt;</button>
-                <button class="btn btn--outline nav-btn" id="todayBtn">今天</button>
-                <button class="btn btn--outline nav-btn" id="nextBtn">&gt;</button>
-            </div>
-            <h2 class="current-date" id="currentDate"></h2>
-            <div class="view-controls">
-                <button class="btn btn--secondary view-btn active" data-view="month">月</button>
-                <button class="btn btn--secondary view-btn" data-view="week">週</button>
-                <button class="btn btn--secondary view-btn" data-view="day">日</button>
-                <button class="btn btn--secondary view-btn" data-view="year">年</button>
-            </div>
-        </nav>
-
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-section">
-                <h3>搜索</h3>
-                <input type="text" class="form-control" id="searchInput" placeholder="搜索事件...">
+                <div class="pt-6 border-t border-slate-800">
+                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">系統提示</h3>
+                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                        <p class="text-[11px] text-slate-400 leading-relaxed italic">
+                            "點擊新聞卡片，AI 將自動生成深度分析，您可一鍵將結果分享至 LINE 給團隊。"
+                        </p>
+                    </div>
+                </div>
             </div>
             
-            <div class="sidebar-section">
-                <h3>篩選</h3>
-                <select class="form-control" id="filterSelect">
-                    <option value="">所有事件</option>
-                    <option value="工作">工作</option>
-                    <option value="個人">個人</option>
-                    <option value="假期">假期</option>
-                </select>
+            <div class="p-4 bg-slate-950 border-t border-slate-800 text-[9px] text-slate-600 mono text-center">
+                AI_ENGINE: GEMINI_2.5_FLASH
             </div>
+        </aside>
 
-            <div class="sidebar-section">
-                <h3>顏色標籤</h3>
-                <div class="color-filters" id="colorFilters">
-                    <div class="color-filter" data-color="blue">
-                        <div class="color-dot color-blue"></div>
-                        <span>藍色</span>
-                    </div>
-                    <div class="color-filter" data-color="green">
-                        <div class="color-dot color-green"></div>
-                        <span>綠色</span>
-                    </div>
-                    <div class="color-filter" data-color="yellow">
-                        <div class="color-dot color-yellow"></div>
-                        <span>黃色</span>
-                    </div>
-                    <div class="color-filter" data-color="purple">
-                        <div class="color-dot color-purple"></div>
-                        <span>紫色</span>
-                    </div>
-                    <div class="color-filter" data-color="red">
-                        <div class="color-dot color-red"></div>
-                        <span>紅色</span>
-                    </div>
-                    <div class="color-filter" data-color="orange">
-                        <div class="color-dot color-orange"></div>
-                        <span>橙色</span>
-                    </div>
-                    <div class="color-filter" data-color="pink">
-                        <div class="color-dot color-pink"></div>
-                        <span>粉色</span>
-                    </div>
-                    <div class="color-filter" data-color="teal">
-                        <div class="color-dot color-teal"></div>
-                        <span>青色</span>
-                    </div>
+        <!-- Center: News Stream -->
+        <main class="flex-1 overflow-y-auto bg-slate-900/20 p-6 custom-scrollbar" id="newsFeed">
+            <div id="emptyState" class="h-full flex flex-col items-center justify-center text-slate-600 space-y-4">
+                <i class="fas fa-tower-broadcast text-5xl opacity-20 mb-4"></i>
+                <div class="text-center">
+                    <p class="font-bold text-lg text-slate-400">尚未同步外部情報</p>
+                    <p class="text-sm">點擊上方「掃描最新情報」按鈕啟動聯網抓取</p>
                 </div>
             </div>
+        </main>
 
-            <div class="sidebar-section">
-                <h3>導入/導出</h3>
-                <button class="btn btn--outline btn--full-width" id="importBtn">導入</button>
-                <button class="btn btn--outline btn--full-width" id="exportBtn">導出</button>
-                <input type="file" id="importFile" accept=".json" style="display: none;">
-            </div>
+        <!-- Right: AI Insight Panel -->
+        <aside class="w-[400px] border-l border-slate-800 bg-slate-950/80 backdrop-blur-md overflow-y-auto custom-scrollbar" id="aiPanel">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-brain text-blue-500"></i>
+                        <h3 class="font-bold text-sm tracking-wide">AI 深度情報判讀</h3>
+                    </div>
+                    <span class="text-[9px] mono bg-slate-800 px-2 py-1 rounded text-slate-500 uppercase">Intelligence_Center</span>
+                </div>
 
-            <div class="sidebar-section">
-                <h3>鍵盤快捷鍵</h3>
-                <div class="keyboard-shortcuts">
-                    <div class="shortcut">
-                        <kbd>←→</kbd>
-                        <span>日期導航</span>
-                    </div>
-                    <div class="shortcut">
-                        <kbd>↑↓</kbd>
-                        <span>週導航</span>
-                    </div>
-                    <div class="shortcut">
-                        <kbd>Enter</kbd>
-                        <span>選擇日期</span>
-                    </div>
-                    <div class="shortcut">
-                        <kbd>Tab</kbd>
-                        <span>開始鍵盤導航</span>
-                    </div>
-                    <div class="shortcut">
-                        <kbd>Esc</kbd>
-                        <span>取消選擇</span>
+                <div id="aiAnalysisResult" class="space-y-8">
+                    <!-- Default state -->
+                    <div class="text-center py-24 opacity-20">
+                        <i class="fas fa-file-invoice text-5xl mb-6"></i>
+                        <p class="text-sm px-12">選取左側情資卡片<br>啟動智慧分析矩陣</p>
                     </div>
                 </div>
             </div>
         </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="calendar-container">
-                <!-- Month View -->
-                <div class="calendar-view" id="monthView">
-                    <div class="calendar-header">
-                        <div class="weekday">日</div>
-                        <div class="weekday">一</div>
-                        <div class="weekday">二</div>
-                        <div class="weekday">三</div>
-                        <div class="weekday">四</div>
-                        <div class="weekday">五</div>
-                        <div class="weekday">六</div>
-                    </div>
-                    <div class="calendar-grid" id="calendarGrid"></div>
-                </div>
-
-                <!-- Week View -->
-                <div class="calendar-view hidden" id="weekView">
-                    <div class="week-header">
-                        <div class="time-column"></div>
-                        <div class="week-days" id="weekDays"></div>
-                    </div>
-                    <div class="week-content">
-                        <div class="time-slots" id="timeSlots"></div>
-                        <div class="week-grid" id="weekGrid"></div>
-                    </div>
-                </div>
-
-                <!-- Day View -->
-                <div class="calendar-view hidden" id="dayView">
-                    <div class="day-header">
-                        <h3 id="dayTitle"></h3>
-                    </div>
-                    <div class="day-content">
-                        <div class="time-slots" id="dayTimeSlots"></div>
-                        <div class="day-events" id="dayEvents"></div>
-                    </div>
-                </div>
-
-                <!-- Year View -->
-                <div class="calendar-view hidden" id="yearView">
-                    <div class="year-grid" id="yearGrid"></div>
-                </div>
-            </div>
-        </main>
     </div>
 
-    <!-- Event Modal -->
-    <div class="modal" id="eventModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">新增事件</h3>
-                <button class="close-btn" id="closeModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="eventForm">
-                    <div class="form-group">
-                        <label class="form-label" for="eventTitle">標題</label>
-                        <input type="text" class="form-control" id="eventTitle" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="eventDate">日期</label>
-                        <input type="date" class="form-control" id="eventDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="eventStartTime">開始時間</label>
-                        <input type="time" class="form-control" id="eventStartTime">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="eventEndTime">結束時間</label>
-                        <input type="time" class="form-control" id="eventEndTime">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="eventDescription">描述</label>
-                        <textarea class="form-control" id="eventDescription" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="eventType">類型</label>
-                        <select class="form-control" id="eventType">
-                            <option value="工作">工作</option>
-                            <option value="個人">個人</option>
-                            <option value="假期">假期</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="eventColor">顏色</label>
-                        <div class="color-picker" id="colorPicker">
-                            <div class="color-option" data-color="blue"></div>
-                            <div class="color-option" data-color="green"></div>
-                            <div class="color-option" data-color="yellow"></div>
-                            <div class="color-option" data-color="purple"></div>
-                            <div class="color-option" data-color="red"></div>
-                            <div class="color-option" data-color="orange"></div>
-                            <div class="color-option" data-color="pink"></div>
-                            <div class="color-option" data-color="teal"></div>
-                        </div>
-                        <input type="hidden" id="eventColor" value="blue">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="eventRepeat">重複</label>
-                        <select class="form-control" id="eventRepeat">
-                            <option value="不重複">不重複</option>
-                            <option value="每日">每日</option>
-                            <option value="每週">每週</option>
-                            <option value="每月">每月</option>
-                            <option value="每年">每年</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn--secondary" id="cancelEvent">取消</button>
-                <button type="button" class="btn btn--primary" id="saveEvent">儲存</button>
-                <button type="button" class="btn btn--outline" id="deleteEvent" style="display: none;">刪除</button>
-            </div>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 transform translate-y-20 opacity-0 transition-all duration-500">
+        <div class="bg-blue-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center space-x-3 font-bold text-sm">
+            <i class="fas fa-bolt text-yellow-400"></i>
+            <span id="toastMsg">系統訊息</span>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script>
+        const apiKey = ""; 
+        let newsData = [];
+        let activeCategory = 'all';
+
+        // --- 核心：獲取即時新聞 (含自動備援) ---
+        async function syncNews() {
+            const btn = document.getElementById('syncBtn');
+            const icon = document.getElementById('syncIcon');
+            const status = document.getElementById('statusIndicator');
+            
+            btn.disabled = true;
+            icon.classList.add('fa-spin');
+            status.innerHTML = `<div class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></div><span class="text-[10px] mono text-blue-400">SCANNING_LIVE_TW_WEB...</span>`;
+            showToast("正在搜尋台灣今日重大即時情報...");
+
+            const query = `請檢索台灣今日(2026年4月3日)最新的重大金融、半導體、AI、政府財經政策新聞。
+            請整理成 JSON 格式回傳陣列，內容必須精簡準確。每個物件包含：
+            id (數字), title (標題), source (媒體來源), category (finance/tech/policy), level (high/medium/low), time (HH:mm), summary (摘要50字), details (詳細內容150字)。
+            僅輸出 JSON。`;
+
+            try {
+                const response = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: query }] }],
+                        tools: [{ "google_search": {} }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+
+                const data = await response.json();
+                let resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (resultText) {
+                    const fetchedNews = JSON.parse(resultText);
+                    newsData = [...fetchedNews, ...newsData].slice(0, 15); 
+                } else {
+                    throw new Error("API No Result");
+                }
+            } catch (err) {
+                console.warn("API Error, using fallback data:", err);
+                newsData = getFallbackNews();
+                showToast("連線受限，已載入備援預測情資", "fas fa-exclamation-triangle");
+            } finally {
+                btn.disabled = false;
+                icon.classList.remove('fa-spin');
+                status.innerHTML = `<div class="w-2 h-2 bg-green-500 rounded-full"></div><span class="text-[10px] mono text-slate-400">NODE_ONLINE</span>`;
+                renderNews();
+                document.getElementById('emptyState').classList.add('hidden');
+            }
+        }
+
+        function renderNews() {
+            const feed = document.getElementById('newsFeed');
+            const filtered = activeCategory === 'all' ? newsData : newsData.filter(n => n.category === activeCategory);
+
+            if (filtered.length === 0) {
+                feed.innerHTML = `<div class="h-full flex items-center justify-center opacity-30 italic">目前分類下暫無更新</div>`;
+                return;
+            }
+
+            feed.innerHTML = filtered.map((item, idx) => `
+                <div class="news-card p-6 rounded-2xl mb-4 cursor-pointer flex items-start space-x-5 animate-in fade-in slide-in-from-bottom-4 duration-500" 
+                     style="animation-delay: ${idx * 50}ms"
+                     onclick="analyzeDeeply(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-[9px] mono font-bold px-2 py-0.5 rounded border ${getLevelStyles(item.level)}">
+                                    ${item.level.toUpperCase()} RISK
+                                </span>
+                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-tight">${item.source} • ${item.time}</span>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-100 group-hover:text-blue-400 transition-colors leading-tight">${item.title}</h3>
+                        <p class="text-sm text-slate-400 mt-3 line-clamp-2 leading-relaxed font-light">${item.summary}</p>
+                    </div>
+                    <div class="flex-shrink-0 self-center">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-800 group-hover:bg-blue-600/20 transition-all">
+                            <i class="fas fa-chevron-right text-slate-600 group-hover:text-blue-400 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function analyzeDeeply(item) {
+            const resultPanel = document.getElementById('aiAnalysisResult');
+            resultPanel.innerHTML = `
+                <div class="space-y-8">
+                    <div class="h-6 w-1/3 bg-slate-800 animate-pulse rounded"></div>
+                    <div class="space-y-3">
+                        <div class="h-4 w-full bg-slate-800 animate-pulse rounded"></div>
+                        <div class="h-4 w-full bg-slate-800 animate-pulse rounded"></div>
+                        <div class="h-4 w-2/3 bg-slate-800 animate-pulse rounded"></div>
+                    </div>
+                    <div class="h-32 w-full bg-slate-800 animate-pulse rounded"></div>
+                </div>
+            `;
+
+            const prompt = `深度分析這則新聞：\n標題：${item.title}\n詳細內容：${item.details}\n
+            請以專業投資顧問視角回傳 JSON：
+            - impact: 對產業或市場的具體影響分析 (60字)
+            - mood: 利多/利空/中立
+            - score: 0-100 (影響力權重)
+            - action: 給決策者的三點行動建議 (陣列)`;
+
+            try {
+                const response = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+
+                const data = await response.json();
+                const analysis = JSON.parse(data.candidates[0].content.parts[0].text);
+
+                resultPanel.innerHTML = `
+                    <div class="animate-in fade-in slide-in-from-right-4 duration-500 space-y-8 pb-10">
+                        <div>
+                            <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest block mb-2">Selected_Intelligence</span>
+                            <h4 class="text-xl font-bold leading-tight text-white">${item.title}</h4>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                                <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">市場傾向</p>
+                                <p class="text-lg font-bold ${analysis.mood === '利多' ? 'text-green-500' : analysis.mood === '利空' ? 'text-red-500' : 'text-yellow-500'}">${analysis.mood}</p>
+                            </div>
+                            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                                <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">權重評分</p>
+                                <p class="text-lg font-bold mono text-blue-400">${analysis.score}/100</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-600/5 border border-blue-600/20 p-5 rounded-2xl">
+                            <p class="text-[10px] text-blue-400 mb-3 uppercase font-bold tracking-widest">影響力評估</p>
+                            <p class="text-sm text-slate-300 leading-relaxed">${analysis.impact}</p>
+                        </div>
+
+                        <div>
+                            <p class="text-[10px] text-slate-500 mb-4 uppercase font-bold tracking-widest">決策行動路徑</p>
+                            <div class="space-y-3">
+                                ${analysis.action.map(a => `
+                                    <div class="flex items-start space-x-3 bg-slate-900/40 p-3 rounded-xl border border-slate-800/50">
+                                        <i class="fas fa-chevron-right text-blue-600 mt-1 text-[10px]"></i>
+                                        <p class="text-[11px] text-slate-400 leading-tight">${a}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- NEW: Share to LINE Button -->
+                        <button onclick="shareToLine('${item.title}', '${analysis.mood}', '${analysis.impact}', '${analysis.action.join('；')}')" 
+                                class="w-full bg-[#06C755] hover:bg-[#05b34d] text-white py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center space-x-3 shadow-xl shadow-[#06C755]/10">
+                            <i class="fab fa-line text-2xl"></i>
+                            <span>分享情報至 LINE</span>
+                        </button>
+                    </div>
+                `;
+            } catch (err) {
+                resultPanel.innerHTML = `<div class="text-center py-10 text-red-400 text-sm">解析模組暫時無法連線</div>`;
+            }
+        }
+
+        // --- 核心：分享至 LINE ---
+        function shareToLine(title, mood, impact, actions) {
+            const message = `【AI 24H 智慧通報】\n\n📌 標題：${title}\n📊 市場傾向：${mood}\n\n🔍 AI 深度影響評估：\n${impact}\n\n💡 決策建議：\n${actions.replace(/；/g, '\n- ')}\n\n--- 來自 AI 智慧通報戰情室 ---`;
+            const encodedMsg = encodeURIComponent(message);
+            const lineUrl = `https://line.me/R/msg/text/?${encodedMsg}`;
+            
+            // 開啟 LINE 分享
+            window.open(lineUrl, '_blank');
+            showToast("正在開啟 LINE 分享介面...");
+        }
+
+        // --- 輔助函式 ---
+        function setFilter(cat) {
+            activeCategory = cat;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active-tab');
+                btn.classList.add('text-slate-400');
+            });
+            event.currentTarget.classList.add('active-tab');
+            event.currentTarget.classList.remove('text-slate-400');
+            renderNews();
+        }
+
+        function getLevelStyles(level) {
+            if (level === 'high') return 'text-red-400 border-red-500/30 bg-red-500/10 high-risk-pulse';
+            if (level === 'medium') return 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10';
+            return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
+        }
+
+        function showToast(msg, icon = "fas fa-bolt") {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3500);
+        }
+
+        function getFallbackNews() {
+            return [
+                { id: 1, title: "台積電美股 ADR 盤後勁揚，帶動台股夜盤突破 21000 點", source: "經濟日報", category: "tech", level: "high", time: "09:02", summary: "受 2 奈米進度超前消息激勵，台積電相關供應鏈今日早盤預計集體跳空走高。", details: "台積電昨晚在美股交易時段表現強勁，市場分析師指出，隨著 AI 晶片需求持續擴大，台積電先進製程產能已滿載至 2026 年，將帶動相關 IP 及設備廠商營收創高。" },
+                { id: 2, title: "金管會副主委：將啟動新一輪金融數位轉型指引，開放 AI 徵信", source: "工商時報", category: "policy", level: "medium", time: "10:15", summary: "政府擬於下季鬆綁金融資料使用限制，有利於純網銀與傳統銀行整合生成式 AI。", details: "此次指引修訂重點在於確保數據隱私的前提下，允許金融機構使用外部大語言模型進行客戶信用分析與防制洗錢，預計將大幅降低銀行合規成本並提升審核效率。" },
+                { id: 3, title: "輝達(NVIDIA) 宣佈與鴻海擴大全球 AI 算力中心合作計畫", source: "科技新報", category: "tech", level: "high", time: "08:45", summary: "雙方將在高雄及墨西哥建立大型 GB200 算力叢集，鞏固台灣 AI 硬體中樞地位。", details: "此項合作案不僅包含硬體組裝，更涉及邊緣運算軟體開發。鴻海將以此轉型為 AI 系統集成服務商，預計毛利率將有感提升，並帶動散熱、滑軌等組件需求。" }
+            ];
+        }
+
+        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
+            try {
+                const res = await fetch(url, options);
+                if (!res.ok) throw new Error(res.statusText);
+                return res;
+            } catch (err) {
+                if (retries <= 0) throw err;
+                await new Promise(r => setTimeout(r, backoff));
+                return fetchWithRetry(url, options, retries - 1, backoff * 2);
+            }
+        }
+    </script>
 </body>
 </html>
+
