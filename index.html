@@ -150,7 +150,6 @@
         }
         @media (hover: hover) { .btn-icon-text:hover { background: var(--bg-input); color: var(--text-primary); } }
         .btn-notion { color: var(--text-primary); background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); }
-        .btn-pdf { color: #ef4444; background: rgba(239, 68, 68, 0.05); border: 1px solid var(--border-color); }
 
         /* ----- Main Content ----- */
         .main-content {
@@ -366,10 +365,6 @@
             </ul>
 
             <div class="sidebar-footer">
-                <button class="btn-icon-text btn-pdf" id="btn-export-pdf">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    匯出 PDF 報表
-                </button>
                 <button class="btn-icon-text btn-notion" id="btn-export-notion">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
                     匯出至 Notion (.md)
@@ -568,6 +563,7 @@
                 if (!data.links || data.links.length === 0) return alert('沒有點子可匯出');
 
                 let mdContent = '# 裝潢點子庫\n\n';
+                // 為了讓 Notion 順利轉換表格，並維持超連結，我們建立標準 Markdown 表格
                 mdContent += '| 標題 | 網址 | 分類 | 標籤 | 靈感筆記 | 收藏 | 建立日期 |\n';
                 mdContent += '|---|---|---|---|---|:---:|---|\n';
 
@@ -578,9 +574,12 @@
 
                 data.links.forEach(link => {
                     const catName = data.categories.find(c => c.id === link.category)?.name || '未分類';
+                    
+                    // 【核心修復】：將網址強制加上 [URL](URL) 格式，確保匯入 Notion 後能正常點擊。
                     const title = `[${escapeMD(link.title)}](${link.url})`; 
                     const urlStr = escapeMD(link.url);
                     const url = `[${urlStr}](${link.url})`; 
+                    
                     const cat = escapeMD(catName);
                     const tags = escapeMD((link.tags || []).join(', '));
                     const desc = escapeMD(link.description);
@@ -594,14 +593,17 @@
                 this.downloadBlob(blob, `裝潢點子_Notion匯出_${new Date().toISOString().slice(0,10)}.md`);
             }
 
+            // 【修復核心】：解決 Webview / Safari 的隱藏元素點擊被阻擋問題
             downloadBlob(blob, filename) {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.style.display = 'none'; 
+                a.style.display = 'none'; // 隱藏按鈕
                 a.href = url;
                 a.download = filename;
-                document.body.appendChild(a); 
+                document.body.appendChild(a); // 必須附加到 DOM 中，手機瀏覽器才允許觸發下載
                 a.click();
+                
+                // 確保觸發後再清理
                 setTimeout(() => {
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
@@ -666,7 +668,10 @@
                         editBtn.className = 'edit-cat-btn';
                         editBtn.title = '修改名稱';
                         editBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
-                        editBtn.onclick = (e) => { e.stopPropagation(); this.openCatModal(cat); };
+                        editBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            this.openCatModal(cat);
+                        };
 
                         const delBtn = document.createElement('button');
                         delBtn.className = 'delete-cat-btn';
@@ -844,19 +849,24 @@
             deleteLinks(ids) { this.data.links = this.data.links.filter(l => !ids.includes(l.id)); this.saveState(); this.renderLinks(); this.renderCategories(); }
             toggleFav(id) { const link = this.data.links.find(l => l.id === id); if (link) { link.favorite = !link.favorite; this.saveState(); this.renderLinks(); } }
             
+            // 處理分類的新增與修改
             saveCategory(name, id) {
                 if (!name.trim()) return;
                 
                 if (id) {
+                    // 修改
                     const cat = this.data.categories.find(c => c.id === id);
                     if (cat) {
                         cat.name = name;
                         this.showToast('分類已更新', 'success');
+                        
+                        // 若目前正在瀏覽該分類，同步更新標題
                         if(this.state.filterType === 'category' && this.state.filterValue === id) {
                             this.els.viewTitle.textContent = name;
                         }
                     }
                 } else {
+                    // 新增
                     this.data.categories.push({ id: Utils.generateId(), name });
                     this.showToast('分類建立成功', 'success');
                 }
@@ -881,88 +891,6 @@
                     const item = arr.splice(dIdx, 1)[0];
                     arr.splice(tIdx, 0, item);
                     this.saveState(); this.renderLinks();
-                }
-            }
-
-            // ==========================================
-            // 修復：完美轉換 HTML 字串為 PDF
-            // ==========================================
-            async exportToPDF() {
-                const links = this.getFilteredLinks();
-                if (links.length === 0) return this.showToast('目前沒有點子可匯出', 'warning');
-                
-                this.showToast('正在產生 PDF 報表，請稍候...', 'info');
-
-                // 動態載入 html2pdf.js
-                if (typeof html2pdf === 'undefined') {
-                    try {
-                        await new Promise((resolve, reject) => {
-                            const script = document.createElement('script');
-                            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-                            script.onload = resolve;
-                            script.onerror = reject;
-                            document.head.appendChild(script);
-                        });
-                    } catch (e) {
-                        return this.showToast('無法載入 PDF 轉換套件，請檢查網路狀態', 'error');
-                    }
-                }
-
-                // 組合純淨的 HTML 字串，直接將字串餵給 html2pdf 處理
-                // 這樣就不會受到隱藏 div (display:none 或 left:-9999px) 造成截圖空白的問題
-                let html = `
-                    <div style="padding: 20px; font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background-color: #ffffff; color: #000000;">
-                        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px;">
-                            <h1 style="font-size: 28px; margin: 0 0 10px 0; color: #0f172a;">裝潢點子彙整報表</h1>
-                            <p style="color: #64748b; margin: 0; font-size: 14px;">匯出日期：${new Date().toLocaleDateString('zh-TW')} | 總計：${links.length} 筆點子</p>
-                        </div>
-                `;
-
-                // 將目前列表以「分類」進行群組化
-                const grouped = {};
-                links.forEach(link => {
-                    const catName = this.data.categories.find(c => c.id === link.category)?.name || '未分類';
-                    if (!grouped[catName]) grouped[catName] = [];
-                    grouped[catName].push(link);
-                });
-
-                for (const [catName, catLinks] of Object.entries(grouped)) {
-                    html += `<h2 style="font-size: 20px; border-left: 4px solid #6366f1; padding-left: 10px; margin-top: 35px; margin-bottom: 15px; color: #1e293b;">📁 ${Utils.escapeHTML(catName)}</h2>`;
-
-                    catLinks.forEach(link => {
-                        const tags = (link.tags || []).join(', ');
-                        html += `
-                            <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #cbd5e1; border-radius: 8px; page-break-inside: avoid; background-color: #f8fafc;">
-                                <div style="font-size: 16px; font-weight: bold; margin-bottom: 6px; color: #0f172a;">
-                                    ${link.favorite ? '⭐ ' : ''}${Utils.escapeHTML(link.title)}
-                                </div>
-                                <div style="font-size: 13px; margin-bottom: 8px; word-break: break-all;">
-                                    網址：<a href="${link.url}" style="color: #4f46e5; text-decoration: none;">${Utils.escapeHTML(link.url)}</a>
-                                </div>
-                                ${link.description ? `<div style="font-size: 14px; color: #334155; margin-bottom: 8px; line-height: 1.5;">${Utils.escapeHTML(link.description).replace(/\n/g, '<br>')}</div>` : ''}
-                                ${tags ? `<div style="font-size: 12px; color: #64748b;">🏷️ 標籤：${Utils.escapeHTML(tags)}</div>` : ''}
-                            </div>
-                        `;
-                    });
-                }
-
-                html += `</div>`;
-
-                const opt = {
-                    margin:       10, // 單位 mm
-                    filename:     `裝潢點子報表_${new Date().toISOString().slice(0,10)}.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' }, // 強制白底
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                };
-
-                try {
-                    // 將組合好的純 HTML 字串直接傳遞轉換
-                    await html2pdf().set(opt).from(html).save();
-                    this.showToast('PDF 匯出成功！', 'success');
-                } catch (err) {
-                    console.error('PDF 轉換發生錯誤:', err);
-                    this.showToast('PDF 匯出失敗', 'error');
                 }
             }
 
@@ -1040,10 +968,8 @@
                 });
 
                 // ==========================================
-                // 綁定匯出與匯入功能
+                // 修正：綁定匯出按鈕並加上提示
                 // ==========================================
-                document.getElementById('btn-export-pdf').addEventListener('click', () => this.exportToPDF());
-                
                 document.getElementById('btn-export-notion').addEventListener('click', () => {
                     this.showToast('準備下載 Notion 備份檔...', 'info');
                     this.storage.exportToNotionFile();
