@@ -1,739 +1,1542 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>裝潢工程合約產生器</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --ink: #1a1714;
-    --ink-light: #4a4540;
-    --parchment: #f5f0e8;
-    --cream: #faf7f2;
-    --warm: #c8a96e;
-    --warm-light: #e8d9b8;
-    --warm-pale: #f0e8d4;
-    --accent: #8b6914;
-    --border: #d4c4a0;
-    --section-bg: #fffdf8;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus - 專業級超連結管理工具</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ================= CSS 變數與主題 ================= */
+        :root {
+            /* 淺色主題變數 */
+            --bg-base: #f8fafc;
+            --bg-sidebar: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.8);
+            --bg-input: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --accent-primary: #6366f1; /* 藍紫 */
+            --accent-hover: #4f46e5;
+            --border-color: rgba(0, 0, 0, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-glow: 0 0 15px rgba(99, 102, 241, 0.3);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+        [data-theme="dark"] {
+            /* 深色主題變數 (預設) */
+            --bg-base: #0b0f19;
+            --bg-sidebar: rgba(15, 23, 42, 0.6);
+            --bg-card: rgba(30, 41, 59, 0.6);
+            --bg-input: rgba(15, 23, 42, 0.8);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #475569;
+            --accent-primary: #818cf8;
+            --accent-hover: #6366f1;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow-glow: 0 0 20px rgba(129, 140, 248, 0.2);
+        }
 
-  body {
-    background: var(--cream);
-    color: var(--ink);
-    font-family: 'Noto Sans TC', sans-serif;
-    font-weight: 300;
-    line-height: 1.7;
-    min-height: 100vh;
-  }
+        /* ================= 基礎重置與排版 ================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow: hidden; /* 隱藏整體卷軸，交給內部處理 */
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* Glassmorphism 基礎類別 */
+        .glass {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+        }
 
-  /* Layout */
-  .app { display: flex; min-height: 100vh; }
+        ul { list-style: none; }
+        a { text-decoration: none; color: inherit; }
+        button, input, select, textarea { 
+            font-family: inherit; 
+            outline: none; 
+            border: none;
+            background: none;
+            color: inherit;
+        }
+        button { cursor: pointer; transition: all 0.2s; }
+        
+        /* 卷軸美化 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
 
-  .sidebar {
-    width: 420px;
-    min-width: 420px;
-    background: var(--ink);
-    color: var(--parchment);
-    padding: 40px 36px;
-    overflow-y: auto;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-  }
+        /* ================= 佈局 ================= */
+        #app {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
 
-  .main {
-    flex: 1;
-    padding: 48px 52px;
-    overflow-y: auto;
-  }
+        /* ----- Sidebar ----- */
+        .sidebar {
+            width: 260px;
+            height: 100%;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            z-index: 10;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
 
-  /* Sidebar header */
-  .sidebar-header {
-    border-bottom: 1px solid rgba(200,169,110,0.3);
-    padding-bottom: 28px;
-    margin-bottom: 32px;
-  }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(129, 140, 248, 0.3);
+        }
 
-  .sidebar-header .label {
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--warm);
-    margin-bottom: 10px;
-  }
+        .logo-area svg { width: 28px; height: 28px; fill: currentColor; }
 
-  .sidebar-header h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 26px;
-    line-height: 1.3;
-    color: #fff;
-    margin-bottom: 8px;
-  }
+        .nav-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .nav-item svg { width: 18px; height: 18px; opacity: 0.8; }
+        .nav-item:hover { background: var(--bg-input); color: var(--text-primary); }
+        .nav-item.active { 
+            background: rgba(99, 102, 241, 0.1); 
+            color: var(--accent-primary); 
+            border-left: 3px solid var(--accent-primary);
+        }
 
-  .sidebar-header p {
-    font-size: 12px;
-    color: rgba(245,240,232,0.5);
-    line-height: 1.6;
-  }
+        .nav-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.5rem 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-  /* Form sections */
-  .form-section {
-    margin-bottom: 28px;
-  }
+        .add-cat-btn { background: none; color: var(--text-muted); hover: var(--text-primary); padding: 2px;}
 
-  .section-title {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--warm);
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: rgba(200,169,110,0.2);
-  }
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
-  .field { margin-bottom: 12px; }
+        .btn-icon-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        .btn-icon-text:hover { background: var(--bg-input); color: var(--text-primary); }
 
-  .field label {
-    display: block;
-    font-size: 11px;
-    color: rgba(245,240,232,0.6);
-    margin-bottom: 5px;
-    letter-spacing: 0.05em;
-  }
+        /* ----- Main Content ----- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
 
-  .field input,
-  .field textarea,
-  .field select {
-    width: 100%;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(200,169,110,0.2);
-    border-radius: 4px;
-    padding: 9px 12px;
-    color: var(--parchment);
-    font-family: 'Noto Sans TC', sans-serif;
-    font-size: 13px;
-    font-weight: 300;
-    outline: none;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .field input:focus,
-  .field textarea:focus,
-  .field select:focus {
-    border-color: var(--warm);
-    background: rgba(255,255,255,0.1);
-  }
-  .field textarea { resize: vertical; min-height: 72px; }
-  .field select option { background: #2a2520; }
+        /* Header */
+        .header {
+            height: 70px;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            background: transparent;
+        }
 
-  /* Row layout */
-  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .search-bar {
+            position: relative;
+            width: max(300px, 40%);
+        }
 
-  /* Items table */
-  .items-list { margin-bottom: 10px; }
-  .item-row {
-    display: grid;
-    grid-template-columns: 1fr 56px 70px 20px;
-    gap: 6px;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  .item-row input {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(200,169,110,0.2);
-    border-radius: 3px;
-    padding: 7px 9px;
-    color: var(--parchment);
-    font-family: 'Noto Sans TC', sans-serif;
-    font-size: 12px;
-    font-weight: 300;
-    outline: none;
-    width: 100%;
-  }
-  .item-row input:focus { border-color: var(--warm); }
-  .remove-item {
-    background: none;
-    border: none;
-    color: rgba(200,169,110,0.4);
-    cursor: pointer;
-    font-size: 14px;
-    padding: 0;
-    line-height: 1;
-    transition: color 0.15s;
-  }
-  .remove-item:hover { color: #e06060; }
+        .search-bar svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--text-muted);
+        }
 
-  .add-item-btn {
-    background: none;
-    border: 1px dashed rgba(200,169,110,0.3);
-    border-radius: 3px;
-    color: rgba(200,169,110,0.6);
-    font-size: 11px;
-    font-family: 'Noto Sans TC', sans-serif;
-    cursor: pointer;
-    padding: 7px 14px;
-    width: 100%;
-    letter-spacing: 0.05em;
-    transition: all 0.2s;
-  }
-  .add-item-btn:hover {
-    border-color: var(--warm);
-    color: var(--warm);
-    background: rgba(200,169,110,0.05);
-  }
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border-radius: 20px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        
+        .search-bar input:focus {
+            background: var(--bg-card);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
 
-  /* Generate button */
-  .generate-btn {
-    width: 100%;
-    background: var(--warm);
-    color: var(--ink);
-    border: none;
-    border-radius: 5px;
-    padding: 14px 20px;
-    font-family: 'Noto Serif TC', serif;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    transition: all 0.25s;
-    margin-top: 8px;
-    position: relative;
-    overflow: hidden;
-  }
-  .generate-btn:hover {
-    background: #d4b47a;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 20px rgba(200,169,110,0.3);
-  }
-  .generate-btn:active { transform: translateY(0); }
-  .generate-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
+        .search-shortcut {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            background: var(--bg-base);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
 
-  /* Loading spinner */
-  .spinner {
-    display: inline-block;
-    width: 14px; height: 14px;
-    border: 2px solid rgba(26,23,20,0.3);
-    border-top-color: var(--ink);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    vertical-align: middle;
-    margin-right: 6px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+        .header-actions { display: flex; align-items: center; gap: 1rem; }
 
-  /* Main area */
-  .main-header {
-    margin-bottom: 36px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--border);
-  }
-  .main-header .eyebrow {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--warm);
-    margin-bottom: 6px;
-  }
-  .main-header h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 28px;
-    color: var(--ink);
-    font-weight: 400;
-  }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4); }
+        .btn-primary:active { transform: translateY(0); }
 
-  /* Contract output */
-  #contract-output {
-    min-height: 200px;
-  }
+        .theme-toggle {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .theme-toggle:hover { background: var(--bg-card); color: var(--accent-primary); }
 
-  .empty-state {
-    text-align: center;
-    padding: 80px 40px;
-    color: var(--ink-light);
-  }
-  .empty-state .icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-    opacity: 0.3;
-  }
-  .empty-state p {
-    font-size: 13px;
-    line-height: 1.8;
-    opacity: 0.6;
-  }
+        /* Scrollable Content Area */
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+        }
 
-  /* Contract document */
-  .contract-doc {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 60px 64px;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.06);
-    font-family: 'Noto Serif TC', serif;
-    font-size: 14px;
-    line-height: 2;
-    color: var(--ink);
-    position: relative;
-  }
+        /* Dashboard Stats */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
 
-  .contract-doc .doc-header {
-    text-align: center;
-    margin-bottom: 40px;
-    padding-bottom: 32px;
-    border-bottom: 2px solid var(--ink);
-  }
-  .contract-doc .doc-header h1 {
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 0.25em;
-    margin-bottom: 8px;
-  }
-  .contract-doc .doc-header .doc-no {
-    font-size: 12px;
-    color: var(--ink-light);
-    letter-spacing: 0.1em;
-  }
+        .stat-card {
+            padding: 1.5rem;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-glow); }
+        
+        .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-primary);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .stat-icon svg { width: 24px; height: 24px; }
+        
+        .stat-info h3 { font-size: 0.875rem; color: var(--text-secondary); font-weight: 500; }
+        .stat-info p { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-top: 4px; }
 
-  .contract-doc .contract-body {
-    white-space: pre-wrap;
-    font-size: 13.5px;
-    line-height: 2.1;
-  }
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
 
-  .contract-doc .signature-area {
-    margin-top: 48px;
-    padding-top: 32px;
-    border-top: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-  }
-  .sig-block p {
-    font-size: 12px;
-    border-top: 1px solid var(--ink);
-    padding-top: 6px;
-    margin-top: 40px;
-    letter-spacing: 0.05em;
-  }
+        .view-title { font-size: 1.25rem; font-weight: 600; }
 
-  /* Action bar */
-  .action-bar {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    justify-content: flex-end;
-  }
-  .action-btn {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 8px 18px;
-    font-family: 'Noto Sans TC', sans-serif;
-    font-size: 12px;
-    font-weight: 400;
-    cursor: pointer;
-    color: var(--ink-light);
-    transition: all 0.2s;
-    letter-spacing: 0.05em;
-  }
-  .action-btn:hover {
-    border-color: var(--warm);
-    color: var(--accent);
-    background: var(--warm-pale);
-  }
-  .action-btn.primary {
-    background: var(--ink);
-    color: white;
-    border-color: var(--ink);
-  }
-  .action-btn.primary:hover {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
+        .toolbar-actions { display: flex; gap: 0.5rem; align-items: center; }
 
-  /* Streaming cursor */
-  .cursor {
-    display: inline-block;
-    width: 2px;
-    height: 1em;
-    background: var(--warm);
-    vertical-align: text-bottom;
-    animation: blink 0.8s step-end infinite;
-    margin-left: 2px;
-  }
-  @keyframes blink { 50% { opacity: 0; } }
+        .select-filter {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--warm-light); border-radius: 10px; }
+        .btn-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            background: var(--bg-input);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .btn-icon:hover { background: var(--bg-card); color: var(--text-primary); }
+        .btn-icon.active { background: rgba(99,102,241,0.2); color: var(--accent-primary); border-color: var(--accent-primary);}
 
-  @media (max-width: 900px) {
-    .app { flex-direction: column; }
-    .sidebar { width: 100%; min-width: unset; height: auto; position: static; }
-    .main { padding: 32px 24px; }
-    .contract-doc { padding: 36px 28px; }
-  }
-</style>
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            align-items: start; /* For waterfall effect if items have diff heights */
+        }
+
+        /* Card Style */
+        .link-card {
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            cursor: pointer;
+            border: 1px solid var(--glass-border);
+            /* Required for HTML5 drag and drop visuals */
+            user-select: none; 
+        }
+
+        .link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .favicon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: var(--bg-input);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .favicon img { width: 100%; height: 100%; object-fit: cover; }
+        .favicon svg { width: 18px; height: 18px; color: var(--text-muted); }
+
+        .card-title-area { flex: 1; min-width: 0; }
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+        .card-url {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex-grow: 1;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-primary);
+            border-radius: 12px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            transition: all 0.2s;
+        }
+        .tag:hover { background: rgba(99, 102, 241, 0.2); }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .card-date { font-size: 0.7rem; color: var(--text-muted); }
+
+        .card-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .link-card:hover .card-actions { opacity: 1; }
+
+        .action-btn {
+            width: 28px; height: 28px;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary);
+            background: var(--bg-input);
+        }
+        .action-btn:hover { background: var(--bg-sidebar); color: var(--text-primary); }
+        .action-btn.fav.active { color: var(--warning); }
+        .action-btn.delete:hover { color: var(--danger); }
+
+        /* Batch Select Checkbox */
+        .card-checkbox {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 2px solid var(--text-muted);
+            appearance: none;
+            cursor: pointer;
+            display: none; /* Hidden by default */
+            z-index: 2;
+            background: var(--bg-card);
+        }
+        .card-checkbox:checked {
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+            background-size: 12px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .batch-mode .card-checkbox { display: block; }
+        .batch-mode .link-card:hover .card-actions { opacity: 0; } /* Hide actions in batch mode */
+
+        /* Batch Action Bar (Floating) */
+        .batch-action-bar {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            padding: 12px 24px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+            transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+        .batch-action-bar.visible { bottom: 30px; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+            grid-column: 1 / -1;
+        }
+        .empty-state svg { width: 64px; height: 64px; margin-bottom: 1rem; opacity: 0.5; }
+        .empty-state h3 { color: var(--text-primary); margin-bottom: 0.5rem; }
+
+        /* ================= Modals ================= */
+        dialog {
+            margin: auto;
+            border: none;
+            background: transparent;
+            padding: 0;
+            outline: none;
+            max-width: 500px;
+            width: 90%;
+        }
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            color: var(--text-primary);
+            animation: modalPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalPopIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-title { font-size: 1.25rem; font-weight: 600; }
+        .btn-close { background: none; color: var(--text-muted); font-size: 1.5rem; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .btn-close:hover { background: var(--bg-input); color: var(--text-primary); }
+
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; }
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .form-control:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+        
+        .modal-footer { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+        .btn-secondary { padding: 10px 20px; border-radius: 8px; background: var(--bg-input); color: var(--text-primary); font-weight: 500; border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: var(--border-color); }
+
+        /* ================= Toasts ================= */
+        #toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .toast {
+            background: var(--bg-sidebar);
+            border-left: 4px solid var(--accent-primary);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 250px;
+            animation: slideInRight 0.3s ease forwards, fadeOut 0.3s ease 2.7s forwards;
+        }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        .toast.warning { border-color: var(--warning); }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                transform: translateX(-100%);
+            }
+            .sidebar.open { transform: translateX(0); }
+            .header { padding: 0 1rem; }
+            .search-bar { width: 50%; }
+            .header-actions .btn-primary span { display: none; } /* Hide text on mobile button */
+            .mobile-menu-btn { display: block !important; }
+        }
+        .mobile-menu-btn { display: none; background: none; color: var(--text-primary); padding: 8px; }
+
+        /* Loader */
+        .loader {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid var(--accent-primary);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
 </head>
 <body>
-<div class="app">
-  <!-- Sidebar Form -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="label">Contract Generator</div>
-      <h1>裝潢工程<br>合約產生器</h1>
-      <p>填寫基本資訊，AI 將自動生成完整合法的工程合約</p>
+
+    <div id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo-area">
+                <svg viewBox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+                Nexus
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item active" data-filter="all">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    所有連結
+                </li>
+                <li class="nav-item" data-filter="favorites">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    ⭐ 我的收藏
+                </li>
+                <li class="nav-item" data-filter="recent">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    最近瀏覽
+                </li>
+
+                <div class="nav-section-title">
+                    分類夾
+                    <button class="add-cat-btn" id="btn-add-category" title="新增分類">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                </div>
+                <div id="category-list">
+                    <!-- Categories will be injected here -->
+                </div>
+            </ul>
+
+            <div class="sidebar-footer">
+                <button class="btn-icon-text" id="btn-export">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    匯出資料 (JSON)
+                </button>
+                <button class="btn-icon-text" id="btn-import">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    匯入資料
+                </button>
+                <input type="file" id="file-import" accept=".json" style="display: none;">
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header glass">
+                <button class="mobile-menu-btn" id="btn-mobile-menu">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+
+                <div class="search-bar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="search-input" placeholder="搜尋標題、描述、標籤...">
+                    <span class="search-shortcut">Ctrl+K</span>
+                </div>
+
+                <div class="header-actions">
+                    <button class="theme-toggle" id="btn-theme" title="切換主題">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="moon-icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+                    <button class="btn-primary" id="btn-new-link" title="Ctrl+N">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <span>新增連結</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-scroll" id="content-area">
+                <!-- Dashboard Stats -->
+                <section class="dashboard-stats" id="dashboard-stats">
+                    <div class="stat-card glass">
+                        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg></div>
+                        <div class="stat-info"><h3>總連結數</h3><p id="stat-total">0</p></div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon" style="color: var(--success); background: rgba(16, 185, 129, 0.1);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></div>
+                        <div class="stat-info"><h3>分類夾</h3><p id="stat-cats">0</p></div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon" style="color: var(--warning); background: rgba(245, 158, 11, 0.1);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div>
+                        <div class="stat-info"><h3>已收藏</h3><p id="stat-favs">0</p></div>
+                    </div>
+                </section>
+
+                <!-- Toolbar -->
+                <section class="toolbar">
+                    <h2 class="view-title" id="view-title">所有連結</h2>
+                    <div class="toolbar-actions">
+                        <select class="select-filter" id="sort-select">
+                            <option value="newest">最新加入</option>
+                            <option value="oldest">最早加入</option>
+                            <option value="az">名稱 A-Z</option>
+                        </select>
+                        <button class="btn-icon" id="btn-batch-mode" title="批次管理">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Grid -->
+                <div class="cards-grid" id="links-grid">
+                    <!-- Cards will be injected here -->
+                </div>
+            </div>
+            
+            <!-- Batch Action Bar -->
+            <div class="batch-action-bar" id="batch-action-bar">
+                <span style="font-weight: 500;">已選擇 <span id="batch-count">0</span> 項</span>
+                <button class="btn-secondary" id="btn-batch-cancel">取消</button>
+                <button class="btn-primary" style="background: var(--danger); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);" id="btn-batch-delete">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    刪除所選
+                </button>
+            </div>
+        </main>
     </div>
 
-    <!-- 甲方 -->
-    <div class="form-section">
-      <div class="section-title">甲方（業主）</div>
-      <div class="field"><label>姓名 / 公司名稱</label><input type="text" id="owner-name" placeholder="林○○ / ○○有限公司"></div>
-      <div class="field-row">
-        <div class="field"><label>身分證 / 統一編號</label><input type="text" id="owner-id" placeholder="A123456789"></div>
-        <div class="field"><label>聯絡電話</label><input type="text" id="owner-phone" placeholder="0912-345-678"></div>
-      </div>
-      <div class="field"><label>地址</label><input type="text" id="owner-addr" placeholder="台北市○○區○○路○號"></div>
-    </div>
-
-    <!-- 乙方 -->
-    <div class="form-section">
-      <div class="section-title">乙方（承包商）</div>
-      <div class="field"><label>公司 / 工作室名稱</label><input type="text" id="contractor-name" placeholder="○○室內裝修有限公司"></div>
-      <div class="field-row">
-        <div class="field"><label>統一編號</label><input type="text" id="contractor-id" placeholder="12345678"></div>
-        <div class="field"><label>負責人</label><input type="text" id="contractor-rep" placeholder="王○○"></div>
-      </div>
-      <div class="field"><label>公司地址</label><input type="text" id="contractor-addr" placeholder="台北市○○區○○路○號"></div>
-      <div class="field-row">
-        <div class="field"><label>電話</label><input type="text" id="contractor-phone" placeholder="02-1234-5678"></div>
-        <div class="field"><label>室內裝修業登記證號</label><input type="text" id="contractor-license" placeholder="北市裝修字第○○號"></div>
-      </div>
-    </div>
-
-    <!-- 工程資訊 -->
-    <div class="form-section">
-      <div class="section-title">工程資訊</div>
-      <div class="field"><label>工程名稱</label><input type="text" id="project-name" placeholder="民生社區住宅室內裝修工程"></div>
-      <div class="field"><label>施工地址</label><input type="text" id="project-addr" placeholder="台北市松山區民生東路○段○號○樓"></div>
-      <div class="field-row">
-        <div class="field"><label>開工日期</label><input type="date" id="start-date"></div>
-        <div class="field"><label>完工日期</label><input type="date" id="end-date"></div>
-      </div>
-      <div class="field">
-        <label>付款方式</label>
-        <select id="payment-type">
-          <option value="三期">三期付款（簽約/開工/完工）</option>
-          <option value="四期">四期付款（簽約/開工/中期/完工）</option>
-          <option value="兩期">兩期付款（開工/完工）</option>
-          <option value="自訂">自訂方式</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- 工程項目 -->
-    <div class="form-section">
-      <div class="section-title">工程項目與報價</div>
-      <div class="item-row" style="margin-bottom:6px;opacity:0.4;font-size:10px;letter-spacing:0.05em;">
-        <span>項目名稱</span><span>數量</span><span>金額(元)</span><span></span>
-      </div>
-      <div class="items-list" id="items-list">
-        <div class="item-row">
-          <input type="text" placeholder="拆除工程" class="item-name">
-          <input type="number" placeholder="1" class="item-qty">
-          <input type="number" placeholder="50000" class="item-price">
-          <button class="remove-item" onclick="removeItem(this)">×</button>
+    <!-- Modal: Add/Edit Link -->
+    <dialog id="modal-link">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-link-title">新增連結</h3>
+                <button class="btn-close" id="btn-close-link">×</button>
+            </div>
+            <form id="form-link">
+                <input type="hidden" id="link-id">
+                <div class="form-group">
+                    <label>網址 (URL) *</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="url" class="form-control" id="link-url" required placeholder="https://example.com" autocomplete="off">
+                        <button type="button" class="btn-secondary" id="btn-auto-fetch" title="嘗試抓取標題" style="padding: 0 12px;">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>標題 *</label>
+                    <input type="text" class="form-control" id="link-title" required placeholder="網站名稱或描述性標題" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>分類</label>
+                    <select class="form-control" id="link-category">
+                        <!-- Options injected via JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>標籤 (Tags)</label>
+                    <input type="text" class="form-control" id="link-tags" placeholder="輸入標籤，用逗號分隔 (例: AI, 設計, 工具)" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>描述備註</label>
+                    <textarea class="form-control" id="link-desc" placeholder="寫些筆記或網站重點..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="btn-cancel-link">取消</button>
+                    <button type="submit" class="btn-primary">
+                        <span id="btn-save-link-text">儲存</span>
+                        <div class="loader" id="link-loader"></div>
+                    </button>
+                </div>
+            </form>
         </div>
-      </div>
-      <button class="add-item-btn" onclick="addItem()">＋ 新增工程項目</button>
-    </div>
+    </dialog>
 
-    <!-- 特殊條款 -->
-    <div class="form-section">
-      <div class="section-title">特殊需求 / 備註</div>
-      <div class="field">
-        <textarea id="special-notes" placeholder="例如：需包含保固條款、環保建材要求、特殊施工規範、防水保固年限…等"></textarea>
-      </div>
-    </div>
+    <!-- Modal: Manage Category -->
+    <dialog id="modal-category">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新增/編輯 分類</h3>
+                <button class="btn-close" id="btn-close-category">×</button>
+            </div>
+            <form id="form-category">
+                <input type="hidden" id="cat-id">
+                <div class="form-group">
+                    <label>分類名稱 *</label>
+                    <input type="text" class="form-control" id="cat-name" required placeholder="例如：開發資源" autocomplete="off">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="btn-cancel-category">取消</button>
+                    <button type="submit" class="btn-primary">儲存</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
 
-    <button class="generate-btn" onclick="generateContract()" id="gen-btn">
-      產生合約書
-    </button>
-  </aside>
+    <div id="toast-container"></div>
 
-  <!-- Main Output -->
-  <main class="main">
-    <div class="main-header">
-      <div class="eyebrow">Output Preview</div>
-      <h2>合約預覽</h2>
-    </div>
+    <script>
+        /**
+         * Nexus - Core Application Logic
+         * Vanilla JS, Class-based architecture
+         */
 
-    <div id="contract-output">
-      <div class="empty-state">
-        <div class="icon">📋</div>
-        <p>填寫左側表單資料後<br>點擊「產生合約書」<br>AI 將依據資訊生成完整合約文件</p>
-      </div>
-    </div>
-  </main>
-</div>
-
-<script>
-function addItem() {
-  const list = document.getElementById('items-list');
-  const row = document.createElement('div');
-  row.className = 'item-row';
-  row.innerHTML = `
-    <input type="text" placeholder="工程項目" class="item-name">
-    <input type="number" placeholder="1" class="item-qty">
-    <input type="number" placeholder="0" class="item-price">
-    <button class="remove-item" onclick="removeItem(this)">×</button>
-  `;
-  list.appendChild(row);
-}
-
-function removeItem(btn) {
-  const rows = document.querySelectorAll('.item-row');
-  if (rows.length > 1) btn.closest('.item-row').remove();
-}
-
-function getItems() {
-  const rows = document.querySelectorAll('.item-row');
-  let items = [];
-  let total = 0;
-  rows.forEach(row => {
-    const name = row.querySelector('.item-name')?.value?.trim();
-    const qty = row.querySelector('.item-qty')?.value || 1;
-    const price = parseFloat(row.querySelector('.item-price')?.value) || 0;
-    if (name) {
-      items.push({ name, qty: parseInt(qty), price });
-      total += price;
-    }
-  });
-  return { items, total };
-}
-
-function formatCurrency(n) {
-  return n.toLocaleString('zh-TW');
-}
-
-async function generateContract() {
-  const btn = document.getElementById('gen-btn');
-  const output = document.getElementById('contract-output');
-
-  // Collect data
-  const data = {
-    ownerName: document.getElementById('owner-name').value || '甲方姓名',
-    ownerId: document.getElementById('owner-id').value || '___',
-    ownerPhone: document.getElementById('owner-phone').value || '___',
-    ownerAddr: document.getElementById('owner-addr').value || '___',
-    contractorName: document.getElementById('contractor-name').value || '乙方公司',
-    contractorId: document.getElementById('contractor-id').value || '___',
-    contractorRep: document.getElementById('contractor-rep').value || '___',
-    contractorAddr: document.getElementById('contractor-addr').value || '___',
-    contractorPhone: document.getElementById('contractor-phone').value || '___',
-    contractorLicense: document.getElementById('contractor-license').value || '___',
-    projectName: document.getElementById('project-name').value || '室內裝修工程',
-    projectAddr: document.getElementById('project-addr').value || '___',
-    startDate: document.getElementById('start-date').value || '___',
-    endDate: document.getElementById('end-date').value || '___',
-    paymentType: document.getElementById('payment-type').value,
-    specialNotes: document.getElementById('special-notes').value || '無',
-  };
-  const { items, total } = getItems();
-
-  const itemsText = items.length
-    ? items.map((i, idx) => `  ${idx+1}. ${i.name}（${i.qty}式）：新台幣 ${formatCurrency(i.price)} 元`).join('\n')
-    : '  （請填寫工程項目）';
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> AI 生成中…';
-
-  // Show container
-  output.innerHTML = `
-    <div class="contract-doc">
-      <div class="doc-header">
-        <h1>裝潢工程承攬合約書</h1>
-        <div class="doc-no">Contract No. ___________</div>
-      </div>
-      <div class="contract-body" id="streaming-body"><span class="cursor"></span></div>
-    </div>
-  `;
-
-  const prompt = `請依據以下資訊，產生一份完整、專業、合法的台灣「裝潢工程承攬合約書」正文內容（不含標題，從當事人條款開始）。
-
-【甲方（業主）】
-姓名：${data.ownerName}
-身分證/統編：${data.ownerId}
-電話：${data.ownerPhone}
-地址：${data.ownerAddr}
-
-【乙方（承包商）】
-公司名稱：${data.contractorName}
-統一編號：${data.contractorId}
-負責人：${data.contractorRep}
-公司地址：${data.contractorAddr}
-電話：${data.contractorPhone}
-室內裝修業登記證號：${data.contractorLicense}
-
-【工程資訊】
-工程名稱：${data.projectName}
-施工地址：${data.projectAddr}
-預計開工：${data.startDate}
-預計完工：${data.endDate}
-付款方式：${data.paymentType}
-
-【工程項目】
-${itemsText}
-合計總價：新台幣 ${formatCurrency(total)} 元整
-
-【特殊需求/備註】
-${data.specialNotes}
-
-請依序包含以下條款（用正式繁體中文，條款格式清晰）：
-第一條 工程範圍
-第二條 工程期限
-第三條 工程總價及付款方式（依據付款方式「${data.paymentType}」說明各期付款金額與時機）
-第四條 材料與施工標準
-第五條 工程變更
-第六條 工程驗收
-第七條 保固責任（至少1年一般保固，防水工程2年）
-第八條 甲方權利與義務
-第九條 乙方權利與義務
-第十條 違約責任（含工期延誤罰則，每逾期一日按總工程款千分之一計罰）
-第十一條 不可抗力
-第十二條 爭議處理（以台灣台北地方法院為第一審管轄法院）
-第十三條 合約效力
-
-結尾加上「本合約書一式兩份，雙方各執一份為憑。」及簽約日期欄位。`;
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 3000,
-        stream: true,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    const bodyEl = document.getElementById('streaming-body');
-    let fullText = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          if (data === '[DONE]') continue;
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-              fullText += parsed.delta.text;
-              bodyEl.innerHTML = escapeHtml(fullText) + '<span class="cursor"></span>';
-              bodyEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        // --- Utility Functions ---
+        const Utils = {
+            generateId: () => '_' + Math.random().toString(36).substr(2, 9),
+            getFaviconUrl: (url) => {
+                try {
+                    const domain = new URL(url).hostname;
+                    return `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=128`;
+                } catch {
+                    return null; // Fallback will be handled in UI
+                }
+            },
+            formatDate: (timestamp) => {
+                const d = new Date(timestamp);
+                return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+            },
+            debounce: (func, delay) => {
+                let timeoutId;
+                return (...args) => {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => func(...args), delay);
+                };
+            },
+            escapeHTML: (str) => {
+                if(!str) return '';
+                return str.replace(/[&<>'"]/g, tag => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+                }[tag]));
             }
-          } catch (e) {}
+        };
+
+        // --- Storage Layer ---
+        class StorageService {
+            constructor(namespace = 'nexus_data') {
+                this.namespace = namespace;
+                this.init();
+            }
+
+            init() {
+                if (!localStorage.getItem(this.namespace)) {
+                    const defaultData = {
+                        links: [],
+                        categories: [{ id: 'cat_default', name: '預設分類' }],
+                        settings: { theme: 'dark', sort: 'newest' }
+                    };
+                    this.save(defaultData);
+                }
+            }
+
+            load() {
+                return JSON.parse(localStorage.getItem(this.namespace));
+            }
+
+            save(data) {
+                localStorage.setItem(this.namespace, JSON.stringify(data));
+            }
+            
+            exportData() {
+                const data = this.load();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `nexus_backup_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
         }
-      }
-    }
 
-    // Remove cursor, add signature block
-    bodyEl.innerHTML = escapeHtml(fullText);
-    const doc = bodyEl.closest('.contract-doc');
-    doc.innerHTML += `
-      <div class="signature-area">
-        <div class="sig-block">
-          <p>甲方（業主）簽章</p>
-          <p style="margin-top:8px;font-size:11px;color:#666;">姓名：${escapeHtml(data.ownerName)}</p>
-        </div>
-        <div class="sig-block">
-          <p>乙方（承包商）簽章</p>
-          <p style="margin-top:8px;font-size:11px;color:#666;">公司：${escapeHtml(data.contractorName)}</p>
-        </div>
-      </div>
-    `;
+        // --- Application Class ---
+        class NexusApp {
+            constructor() {
+                this.storage = new StorageService();
+                this.data = this.storage.load();
+                
+                // State variables
+                this.currentFilter = { type: 'all', value: null }; // type: all, category, favorites, recent, tag
+                this.searchQuery = '';
+                this.recentViews = JSON.parse(localStorage.getItem('nexus_recent')) || [];
+                this.batchMode = false;
+                this.selectedLinkIds = new Set();
+                this.draggedCardId = null;
 
-    // Action buttons
-    output.innerHTML += `
-      <div class="action-bar">
-        <button class="action-btn" onclick="copyContract()">複製全文</button>
-        <button class="action-btn primary" onclick="printContract()">列印 / 匯出 PDF</button>
-      </div>
-    `;
+                // DOM Elements
+                this.els = {
+                    grid: document.getElementById('links-grid'),
+                    catList: document.getElementById('category-list'),
+                    viewTitle: document.getElementById('view-title'),
+                    searchInput: document.getElementById('search-input'),
+                    sortSelect: document.getElementById('sort-select'),
+                    batchBtn: document.getElementById('btn-batch-mode'),
+                    batchBar: document.getElementById('batch-action-bar'),
+                    themeBtn: document.getElementById('btn-theme'),
+                    
+                    // Stats
+                    statTotal: document.getElementById('stat-total'),
+                    statCats: document.getElementById('stat-cats'),
+                    statFavs: document.getElementById('stat-favs'),
 
-  } catch (err) {
-    output.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>生成失敗，請稍後重試。<br><small>${err.message}</small></p></div>`;
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '重新產生合約書';
-  }
-}
+                    // Modals
+                    modalLink: document.getElementById('modal-link'),
+                    formLink: document.getElementById('form-link'),
+                    modalCat: document.getElementById('modal-category'),
+                    formCat: document.getElementById('form-category')
+                };
 
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\n/g, '<br>');
-}
+                this.init();
+            }
 
-function copyContract() {
-  const text = document.querySelector('.contract-body')?.innerText || '';
-  navigator.clipboard.writeText(text).then(() => alert('合約內容已複製至剪貼簿'));
-}
+            init() {
+                this.applyTheme(this.data.settings.theme || 'dark');
+                this.els.sortSelect.value = this.data.settings.sort || 'newest';
+                
+                this.bindEvents();
+                this.renderCategories();
+                this.updateDashboard();
+                this.renderLinks();
+            }
 
-function printContract() {
-  const doc = document.querySelector('.contract-doc');
-  if (!doc) return;
-  const win = window.open('', '_blank');
-  win.document.write(`
-    <html><head>
-    <meta charset="UTF-8">
-    <title>裝潢工程合約書</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-      body { font-family: 'Noto Serif TC', serif; font-size: 13px; line-height: 2; padding: 40px 60px; color: #1a1714; }
-      h1 { text-align: center; font-size: 20px; letter-spacing: 0.2em; margin-bottom: 8px; }
-      .doc-no { text-align: center; font-size: 11px; color: #666; margin-bottom: 32px; border-bottom: 2px solid #1a1714; padding-bottom: 16px; }
-      .sig { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-top: 60px; border-top: 1px solid #ccc; padding-top: 24px; }
-      .sig-block p { border-top: 1px solid #1a1714; padding-top: 4px; margin-top: 60px; font-size: 11px; }
-      @media print { body { padding: 20px 40px; } }
-    </style></head><body>
-    <h1>裝潢工程承攬合約書</h1>
-    <div class="doc-no">Contract No. ___________</div>
-    ${document.querySelector('.contract-body').innerHTML}
-    <div class="sig">
-      <div class="sig-block"><p>甲方（業主）簽章</p></div>
-      <div class="sig-block"><p>乙方（承包商）簽章</p></div>
-    </div>
-    </body></html>
-  `);
-  win.document.close();
-  win.focus();
-  setTimeout(() => win.print(), 600);
-}
-</script>
+            saveState() {
+                this.storage.save(this.data);
+                this.updateDashboard();
+            }
+
+            // --- UI Rendering ---
+
+            renderCategories() {
+                this.els.catList.innerHTML = '';
+                this.data.categories.forEach(cat => {
+                    const count = this.data.links.filter(l => l.category === cat.id).length;
+                    const li = document.createElement('li');
+                    li.className = `nav-item ${this.currentFilter.type === 'category' && this.currentFilter.value === cat.id ? 'active' : ''}`;
+                    li.dataset.id = cat.id;
+                    li.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                        <span style="flex:1">${Utils.escapeHTML(cat.name)}</span>
+                        <span style="font-size: 0.75rem; background: var(--bg-input); padding: 2px 6px; border-radius: 10px;">${count}</span>
+                    `;
+                    
+                    // Delete cat button (if not default)
+                    if(cat.id !== 'cat_default') {
+                        const delBtn = document.createElement('span');
+                        delBtn.innerHTML = '×';
+                        delBtn.style.cssText = 'margin-left:auto; color:var(--text-muted); cursor:pointer; padding:0 4px;';
+                        delBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            if(confirm(`確定刪除分類「${cat.name}」？底下的連結將移至預設分類。`)) {
+                                this.deleteCategory(cat.id);
+                            }
+                        };
+                        li.appendChild(delBtn);
+                    }
+
+                    li.addEventListener('click', () => this.setFilter('category', cat.id, cat.name));
+                    this.els.catList.appendChild(li);
+                });
+
+                // Update select options in Link Modal
+                const select = document.getElementById('link-category');
+                select.innerHTML = this.data.categories.map(c => `<option value="${c.id}">${Utils.escapeHTML(c.name)}</option>`).join('');
+            }
+
+            updateDashboard() {
+                this.els.statTotal.textContent = this.data.links.length;
+                this.els.statCats.textContent = this.data.categories.length;
+                this.els.statFavs.textContent = this.data.links.filter(l => l.favorite).length;
+            }
+
+            getFilteredAndSortedLinks() {
+                let links = [...this.data.links];
+
+                // Search
+                if (this.searchQuery) {
+                    const q = this.searchQuery.toLowerCase();
+                    links = links.filter(l => 
+                        (l.title && l.title.toLowerCase().includes(q)) || 
+                        (l.description && l.description.toLowerCase().includes(q)) ||
+                        (l.url && l.url.toLowerCase().includes(q)) ||
+                        (l.tags && l.tags.some(t => t.toLowerCase().includes(q)))
+                    );
+                }
+
+                // Filter
+                if (this.currentFilter.type === 'category') {
+                    links = links.filter(l => l.category === this.currentFilter.value);
+                } else if (this.currentFilter.type === 'favorites') {
+                    links = links.filter(l => l.favorite);
+                } else if (this.currentFilter.type === 'recent') {
+                    links = links.filter(l => this.recentViews.includes(l.id))
+                                 .sort((a, b) => this.recentViews.indexOf(a.id) - this.recentViews.indexOf(b.id)); // Keep recent order
+                    return links; // Skip normal sorting for recent views
+                } else if (this.currentFilter.type === 'tag') {
+                    links = links.filter(l => l.tags.includes(this.currentFilter.value));
+                }
+
+                // Sort
+                const sort = this.els.sortSelect.value;
+                if (sort === 'newest') links.sort((a, b) => b.createdAt - a.createdAt);
+                if (sort === 'oldest') links.sort((a, b) => a.createdAt - b.createdAt);
+                if (sort === 'az') links.sort((a, b) => a.title.localeCompare(b.title));
+
+                return links;
+            }
+
+            renderLinks() {
+                this.els.grid.innerHTML = '';
+                const links = this.getFilteredAndSortedLinks();
+
+                if (links.length === 0) {
+                    this.els.grid.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            <h3>這裡空空如也</h3>
+                            <p>點擊右上角「新增連結」開始收集吧！</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const fragment = document.createDocumentFragment();
+                links.forEach(link => {
+                    const card = document.createElement('div');
+                    card.className = `link-card glass ${this.batchMode && this.selectedLinkIds.has(link.id) ? 'selected' : ''}`;
+                    card.draggable = !this.batchMode; // Enable drag if not in batch mode
+                    card.dataset.id = link.id;
+
+                    // Fallback SVG icon
+                    const defaultIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
+                    const faviconUrl = Utils.getFaviconUrl(link.url);
+                    const imgTag = faviconUrl ? `<img src="${faviconUrl}" onerror="this.outerHTML='${defaultIcon}'" alt="icon">` : defaultIcon;
+
+                    const tagsHtml = (link.tags || []).map(t => `<span class="tag" onclick="event.stopPropagation(); app.setFilter('tag', '${t}', '#${t}')">${Utils.escapeHTML(t)}</span>`).join('');
+                    
+                    const catName = this.data.categories.find(c => c.id === link.category)?.name || '未分類';
+
+                    card.innerHTML = `
+                        <input type="checkbox" class="card-checkbox" ${this.selectedLinkIds.has(link.id) ? 'checked' : ''}>
+                        <div class="card-header">
+                            <div class="favicon">${imgTag}</div>
+                            <div class="card-title-area">
+                                <div class="card-title" title="${Utils.escapeHTML(link.title)}">${Utils.escapeHTML(link.title)}</div>
+                                <div class="card-url" title="${Utils.escapeHTML(link.url)}">${Utils.escapeHTML(link.url)}</div>
+                            </div>
+                        </div>
+                        ${link.description ? `<div class="card-desc">${Utils.escapeHTML(link.description)}</div>` : '<div style="flex-grow:1"></div>'}
+                        ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
+                        <div class="card-footer">
+                            <span class="card-date">${catName} • ${Utils.formatDate(link.createdAt)}</span>
+                            <div class="card-actions">
+                                <button class="action-btn fav ${link.favorite ? 'active' : ''}" title="收藏" data-action="fav">
+                                    <svg viewBox="0 0 24 24" fill="${link.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                </button>
+                                <button class="action-btn" title="編輯" data-action="edit">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                                <button class="action-btn delete" title="刪除" data-action="delete">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    // Card Event Listeners
+                    card.addEventListener('click', (e) => {
+                        // Handle batch selection
+                        if (this.batchMode) {
+                            const cb = card.querySelector('.card-checkbox');
+                            if(e.target !== cb) cb.checked = !cb.checked;
+                            this.toggleBatchSelection(link.id, cb.checked);
+                            return;
+                        }
+
+                        // Handle actions
+                        const actionBtn = e.target.closest('.action-btn');
+                        if (actionBtn) {
+                            e.stopPropagation();
+                            const action = actionBtn.dataset.action;
+                            if (action === 'fav') this.toggleFavorite(link.id);
+                            if (action === 'edit') this.openLinkModal(link);
+                            if (action === 'delete') this.deleteLink(link.id);
+                            return;
+                        }
+
+                        // Default: Open link
+                        this.openUrl(link.url, link.id);
+                    });
+
+                    // Drag and Drop support
+                    card.addEventListener('dragstart', (e) => {
+                        if(this.batchMode) { e.preventDefault(); return; }
+                        this.draggedCardId = link.id;
+                        e.dataTransfer.effectAllowed = 'move';
+                        setTimeout(() => card.style.opacity = '0.5', 0);
+                    });
+                    
+                    card.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        if(this.draggedCardId && this.draggedCardId !== link.id) {
+                            card.style.border = '2px dashed var(--accent-primary)';
+                        }
+                    });
+
+                    card.addEventListener('dragleave', () => {
+                        card.style.border = '';
+                    });
+
+                    card.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        card.style.border = '';
+                        if (this.draggedCardId && this.draggedCardId !== link.id) {
+                            this.reorderLinks(this.draggedCardId, link.id);
+                        }
+                    });
+
+                    card.addEventListener('dragend', () => {
+                        card.style.opacity = '1';
+                        this.draggedCardId = null;
+                    });
+
+                    fragment.appendChild(card);
+                });
+                this.els.grid.appendChild(fragment);
+            }
+
+            // --- Data Manipulation ---
+
+            saveLink(data) {
+                const isNew = !data.id;
+                const linkData = {
+                    id: data.id || Utils.generateId(),
+                    title: data.title,
+                    url: data.url,
+                    description: data.description,
+                    category: data.category || 'cat_default',
+                    tags: data.tags ? data.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+                    favorite: data.favorite || false,
+                    createdAt: data.createdAt || Date.now(),
+                    updatedAt: Date.now()
+                };
+
+                if (isNew) {
+                    this.data.links.unshift(linkData);
+                    this.showToast('連結已新增', 'success');
+                } else {
+                    const idx = this.data.links.findIndex(l => l.id === data.id);
+                    if (idx !== -1) {
+                        // Preserve original creation date and favorite status if not provided in update
+                        linkData.createdAt = this.data.links[idx].createdAt;
+                        linkData.favorite = this.data.links[idx].favorite;
+                        this.data.links[idx] = linkData;
+                        this.showToast('連結已更新', 'success');
+                    }
+                }
+
+                this.saveState();
+                this.renderLinks();
+                this.renderCategories(); // Update counts
+            }
+
+            deleteLink(id) {
+                if (confirm('確定要刪除這個連結嗎？')) {
+                    this.data.links = this.data.links.filter(l => l.id !== id);
+                    this.saveState();
+                    this.renderLinks();
+                    this.renderCategories();
+                    this.showToast('連結已刪除');
+                }
+            }
+
+            toggleFavorite(id) {
+                const link = this.data.links.find(l => l.id === id);
+                if (link) {
+                    link.favorite = !link.favorite;
+                    this.saveState();
+                    this.renderLinks();
+                }
+            }
+
+            saveCategory(name) {
+                if (!name.trim()) return;
+                const id = Utils.generateId();
+                this.data.categories.push({ id, name });
+                this.saveState();
+                this.renderCategories();
+                this.showToast('分類已新增', 'success');
+            }
+
+            deleteCategory(id) {
+                this.data.categories = this.data.categories.filter(c => c.id !== id);
+                // Move links to default
+                this.data.links.forEach(l => {
+                    if (l.category === id) l.category = 'cat_default';
+                });
+                if(this.currentFilter.type === 'category' && this.currentFilter.value === id) {
+                    this.setFilter('all');
+                }
+                this.saveState();
+                this.renderCategories();
+                this.renderLinks();
+            }
+
+            reorderLinks(draggedId, targetId) {
+                // Simple reordering based on current sorted view
+                const links = this.data.links;
+                const draggedIdx = links.findIndex(l => l.id === draggedId);
+                const targetIdx = links.findIndex(l => l.id === targetId);
+                
+                if(draggedIdx !== -1 && targetIdx !== -1) {
+                    const item = links.splice(draggedIdx, 1)[0];
+                    links.splice(targetIdx, 0, item);
+                    this.saveState();
+                    this.renderLinks();
+                }
+            }
+
+            // --- Interactions & Events ---
+
+            bindEvents() {
+                // Sidebar Navigation
+                document.querySelectorAll('.nav-item').forEach(el => {
+                    if(el.closest('#category-list')) return; // Handled in renderCategories
+                    el.addEventListener('click', (e) => {
+                        const filter = e.currentTarget.dataset.filter;
+                        let title = '所有連結';
+                        if(filter === 'favorites') title = '⭐ 我的收藏';
+                        if(filter === 'recent') title = '最近瀏覽';
+                        this.setFilter(filter, null, title);
+                    });
+                });
+
+                // Top Bar
+                this.els.searchInput.addEventListener('input', Utils.debounce((e) => {
+                    this.searchQuery = e.target.value;
+                    this.renderLinks();
+                }, 300));
+
+                this.els.sortSelect.addEventListener('change', (e) => {
+                    this.data.settings.sort = e.target.value;
+                    this.saveState();
+                    this.renderLinks();
+                });
+
+                this.els.themeBtn.addEventListener('click', () => {
+                    const newTheme = this.data.settings.theme === 'dark' ? 'light' : 'dark';
+                    this.data.settings.theme = newTheme;
+                    this.saveState();
+                    this.applyTheme(newTheme);
+                });
+
+                // Batch Mode
+                this.els.batchBtn.addEventListener('click', () => this.toggleBatchMode());
+                document.getElementById('btn-batch-cancel').addEventListener('click', () => this.toggleBatchMode(false));
+                document.getElementById('btn-batch-delete').addEventListener('click', () => {
+                    if(this.selectedLinkIds.size === 0) return;
+                    if(confirm(`確定要刪除選取的 ${this.selectedLinkIds.size} 個連結嗎？`)) {
+                        this.data.links = this.data.links.filter(l => !this.selectedLinkIds.has(l.id));
+                        this.selectedLinkIds.clear();
+                        this.toggleBatchMode(false);
+                        this.saveState();
+                        this.renderLinks();
+                        this.renderCategories();
+                        this.showToast('批次刪除成功', 'success');
+                    }
+                });
+
+                // Modals
+                document.getElementById('btn-new-link').addEventListener('click', () => this.openLinkModal());
+                document.getElementById('btn-add-category').addEventListener('click', () => this.openCatModal());
+                
+                this.els.formLink.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveLink({
+                        id: document.getElementById('link-id').value,
+                        title: document.getElementById('link-title').value,
+                        url: document.getElementById('link-url').value,
+                        category: document.getElementById('link-category').value,
+                        tags: document.getElementById('link-tags').value,
+                        description: document.getElementById('link-desc').value
+                    });
+                    this.els.modalLink.close();
+                });
+
+                this.els.formCat.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveCategory(document.getElementById('cat-name').value);
+                    this.els.modalCat.close();
+                });
+
+                ['btn-close-link', 'btn-cancel-link'].forEach(id => {
+                    document.getElementById(id).addEventListener('click', () => this.els.modalLink.close());
+                });
+                ['btn-close-category', 'btn-cancel-category'].forEach(id => {
+                    document.getElementById(id).addEventListener('click', () => this.els.modalCat.close());
+                });
+
+                // Close modals on backdrop click
+                this.els.modalLink.addEventListener('click', (e) => {
+                    if(e.target === this.els.modalLink) this.els.modalLink.close();
+                });
+                this.els.modalCat.addEventListener('click', (e) => {
+                    if(e.target === this.els.modalCat) this.els.modalCat.close();
+                });
+
+                // Auto Fetch Title
+                document.getElementById('btn-auto-fetch').addEventListener('click', async () => {
+                    const urlInput = document.getElementById('link-url').value;
+                    const titleInput = document.getElementById('link-title');
+                    if(!urlInput) return this.showToast('請先輸入網址', 'warning');
+                    
+                    try {
+                        const domain = new URL(urlInput).hostname;
+                        // Basic fallback: use domain name if API fetch is not possible client-side
+                        if(!titleInput.value) {
+                            titleInput.value = domain.replace(/^www\./, '');
+                            this.showToast('已代入網域名稱');
+                        }
+                    } catch(e) {
+                        this.showToast('無效的網址格式', 'error');
+                    }
+                });
+
+                // Import / Export
+                document.getElementById('btn-export').addEventListener('click', () => this.storage.exportData());
+                
+                const fileInput = document.getElementById('file-import');
+                document.getElementById('btn-import').addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if(!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const importedData = JSON.parse(event.target.result);
+                            if(importedData && importedData.links && importedData.categories) {
+                                this.data = importedData;
+                                this.saveState();
+                                this.init(); // Re-init UI
+                                this.showToast('資料匯入成功', 'success');
+                            } else {
+                                throw new Error('Invalid format');
+                            }
+                        } catch(err) {
+                            this.showToast('匯入失敗：檔案格式不正確', 'error');
+                        }
+                        fileInput.value = ''; // Reset
+                    };
+                    reader.readAsText(file);
+                });
+
+                // Mobile Menu
+                document.getElementById('btn-mobile-menu').addEventListener('click', () => {
+                    document.getElementById('sidebar').classList.toggle('open');
+                });
+                // Close sidebar when clicking outside on mobile
+                document.addEventListener('click', (e) => {
+                    const sidebar = document.getElementById('sidebar');
+                    if (window.innerWidth <= 768 && sidebar.classList.contains('open') && !sidebar.contains(e.target) && !e.target.closest('#btn-mobile-menu')) {
+                        sidebar.classList.remove('open');
+                    }
+                });
+
+                // Global Shortcuts
+                document.addEventListener('keydown', (e) => {
+                    // Ctrl/Cmd + K : Search
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                        e.preventDefault();
+                        this.els.searchInput.focus();
+                    }
+                    // Ctrl/Cmd + N : New Link
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                        e.preventDefault();
+                        this.openLinkModal();
+                    }
+                });
+            }
+
+            setFilter(type, value = null, titleText = '') {
+                this.currentFilter = { type, value };
+                this.els.viewTitle.textContent = titleText || (type === 'all' ? '所有連結' : value);
+                
+                // Update Sidebar UI
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                if(type === 'all' || type === 'favorites' || type === 'recent') {
+                    document.querySelector(`.nav-item[data-filter="${type}"]`)?.classList.add('active');
+                } else if (type === 'category') {
+                    document.querySelector(`.nav-item[data-id="${value}"]`)?.classList.add('active');
+                }
+
+                // Reset search when changing category/view
+                this.searchQuery = '';
+                this.els.searchInput.value = '';
+                
+                // Close sidebar on mobile
+                if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+
+                this.renderLinks();
+            }
+
+            openLinkModal(linkData = null) {
+                const form = this.els.formLink;
+                form.reset();
+                
+                const titleEl = document.getElementById('modal-link-title');
+                
+                if (linkData) {
+                    titleEl.textContent = '編輯連結';
+                    document.getElementById('link-id').value = linkData.id;
+                    document.getElementById('link-url').value = linkData.url;
+                    document.getElementById('link-title').value = linkData.title;
+                    document.getElementById('link-category').value = linkData.category;
+                    document.getElementById('link-tags').value = (linkData.tags || []).join(', ');
+                    document.getElementById('link-desc').value = linkData.description || '';
+                } else {
+                    titleEl.textContent = '新增連結';
+                    document.getElementById('link-id').value = '';
+                    // Pre-select current category if viewing one
+                    if(this.currentFilter.type === 'category') {
+                        document.getElementById('link-category').value = this.currentFilter.value;
+                    } else {
+                        document.getElementById('link-category').value = 'cat_default';
+                    }
+                }
+                
+                this.els.modalLink.showModal();
+            }
+
+            openCatModal() {
+                this.els.formCat.reset();
+                this.els.modalCat.showModal();
+                setTimeout(() => document.getElementById('cat-name').focus(), 100);
+            }
+
+            openUrl(url, id) {
+                // Track recent
+                this.recentViews = [id, ...this.recentViews.filter(vid => vid !== id)].slice(0, 20); // Keep last 20
+                localStorage.setItem('nexus_recent', JSON.stringify(this.recentViews));
+                
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+
+            toggleBatchMode(forceState) {
+                this.batchMode = forceState !== undefined ? forceState : !this.batchMode;
+                this.selectedLinkIds.clear();
+                
+                if (this.batchMode) {
+                    this.els.grid.classList.add('batch-mode');
+                    this.els.batchBtn.classList.add('active');
+                    this.els.batchBar.classList.add('visible');
+                    this.updateBatchCount();
+                } else {
+                    this.els.grid.classList.remove('batch-mode');
+                    this.els.batchBtn.classList.remove('active');
+                    this.els.batchBar.classList.remove('visible');
+                    // Uncheck all
+                    document.querySelectorAll('.card-checkbox').forEach(cb => cb.checked = false);
+                    document.querySelectorAll('.link-card').forEach(c => c.classList.remove('selected'));
+                }
+            }
+
+            toggleBatchSelection(id, isSelected) {
+                if(isSelected) this.selectedLinkIds.add(id);
+                else this.selectedLinkIds.delete(id);
+                
+                const card = document.querySelector(`.link-card[data-id="${id}"]`);
+                if(card) {
+                    if(isSelected) card.classList.add('selected');
+                    else card.classList.remove('selected');
+                }
+                
+                this.updateBatchCount();
+            }
+
+            updateBatchCount() {
+                document.getElementById('batch-count').textContent = this.selectedLinkIds.size;
+            }
+
+            applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                const icon = this.els.themeBtn.querySelector('svg');
+                if(theme === 'dark') {
+                    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+                } else {
+                    icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+                }
+            }
+
+            showToast(message, type = 'info') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                let icon = '';
+                if(type === 'success') icon = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                else if(type === 'error') icon = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--danger)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+                else icon = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--accent-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+
+                toast.innerHTML = `${icon} <span>${message}</span>`;
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+        }
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            window.app = new NexusApp();
+        });
+
+    </script>
 </body>
 </html>
