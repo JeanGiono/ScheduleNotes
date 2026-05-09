@@ -884,14 +884,16 @@
                 }
             }
 
-            // 新增：匯出 PDF 功能
+            // ==========================================
+            // 修復：完美轉換 HTML 字串為 PDF
+            // ==========================================
             async exportToPDF() {
                 const links = this.getFilteredLinks();
                 if (links.length === 0) return this.showToast('目前沒有點子可匯出', 'warning');
                 
                 this.showToast('正在產生 PDF 報表，請稍候...', 'info');
 
-                // 動態載入 html2pdf.js，避免影響網頁初始載入速度
+                // 動態載入 html2pdf.js
                 if (typeof html2pdf === 'undefined') {
                     try {
                         await new Promise((resolve, reject) => {
@@ -906,25 +908,17 @@
                     }
                 }
 
-                // 建立一個暫存的不可見區塊，用來放置要被截圖轉 PDF 的 HTML 內容
-                const container = document.createElement('div');
-                container.style.position = 'absolute';
-                container.style.left = '-9999px';
-                container.style.top = '-9999px';
-                container.style.width = '800px';
-                container.style.padding = '40px';
-                container.style.backgroundColor = 'white';
-                container.style.color = '#000';
-                container.style.fontFamily = "'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', sans-serif";
-
+                // 組合純淨的 HTML 字串，直接將字串餵給 html2pdf 處理
+                // 這樣就不會受到隱藏 div (display:none 或 left:-9999px) 造成截圖空白的問題
                 let html = `
-                    <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px;">
-                        <h1 style="font-size: 28px; margin: 0 0 10px 0; color: #0f172a;">裝潢點子彙整報表</h1>
-                        <p style="color: #64748b; margin: 0; font-size: 14px;">匯出日期：${new Date().toLocaleDateString('zh-TW')} | 總計：${links.length} 筆點子</p>
-                    </div>
+                    <div style="padding: 20px; font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background-color: #ffffff; color: #000000;">
+                        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px;">
+                            <h1 style="font-size: 28px; margin: 0 0 10px 0; color: #0f172a;">裝潢點子彙整報表</h1>
+                            <p style="color: #64748b; margin: 0; font-size: 14px;">匯出日期：${new Date().toLocaleDateString('zh-TW')} | 總計：${links.length} 筆點子</p>
+                        </div>
                 `;
 
-                // 將目前列表以「分類」進行群組化，讓報表更好閱讀
+                // 將目前列表以「分類」進行群組化
                 const grouped = {};
                 links.forEach(link => {
                     const catName = this.data.categories.find(c => c.id === link.category)?.name || '未分類';
@@ -952,25 +946,23 @@
                     });
                 }
 
-                container.innerHTML = html;
-                document.body.appendChild(container);
+                html += `</div>`;
 
                 const opt = {
-                    margin:       [10, 10, 10, 10],
+                    margin:       10, // 單位 mm
                     filename:     `裝潢點子報表_${new Date().toISOString().slice(0,10)}.pdf`,
                     image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true },
+                    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' }, // 強制白底
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
                 try {
-                    await html2pdf().set(opt).from(container).save();
+                    // 將組合好的純 HTML 字串直接傳遞轉換
+                    await html2pdf().set(opt).from(html).save();
                     this.showToast('PDF 匯出成功！', 'success');
                 } catch (err) {
-                    console.error(err);
+                    console.error('PDF 轉換發生錯誤:', err);
                     this.showToast('PDF 匯出失敗', 'error');
-                } finally {
-                    document.body.removeChild(container);
                 }
             }
 
