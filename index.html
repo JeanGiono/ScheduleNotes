@@ -21,10 +21,8 @@
             --accent-hover: #4f46e5;
             --border-color: rgba(0, 0, 0, 0.08);
             --glass-border: rgba(255, 255, 255, 0.5);
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             --shadow-glow: 0 0 15px rgba(99, 102, 241, 0.2);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             --danger: #ef4444;
             --success: #10b981;
             --warning: #f59e0b;
@@ -32,7 +30,7 @@
 
         [data-theme="dark"] {
             --bg-base: #0b0f19;
-            --bg-sidebar: rgba(15, 23, 42, 0.85);
+            --bg-sidebar: rgba(15, 23, 42, 0.95);
             --bg-card: rgba(30, 41, 59, 0.7);
             --bg-input: rgba(15, 23, 42, 0.9);
             --text-primary: #f8fafc;
@@ -49,87 +47,81 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
-            background-color: var(--bg-base);
-            color: var(--text-primary);
+            background-color: var(--bg-base); color: var(--text-primary);
             transition: background-color 0.3s ease, color 0.3s ease;
-            overflow: hidden;
-            display: flex;
-            height: 100vh;
-            height: 100dvh; /* 適應手機瀏覽器導覽列 */
+            overflow: hidden; display: flex;
+            height: 100vh; height: 100dvh;
         }
         
         .glass {
             background: var(--bg-card);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
         }
 
         ul { list-style: none; }
         a { text-decoration: none; color: inherit; }
-        button, input, select, textarea { 
-            font-family: inherit; outline: none; border: none; background: none; color: inherit; 
-        }
+        button, input, select, textarea { font-family: inherit; outline: none; border: none; background: none; color: inherit; }
         button { cursor: pointer; transition: all 0.2s; }
+        svg { flex-shrink: 0; } /* 防止 SVG 在手機版被壓縮變形 */
         
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
         /* ================= 佈局 ================= */
         #app { display: flex; width: 100%; height: 100%; position: relative; }
 
-        /* Sidebar Overlay for Mobile */
         .sidebar-overlay {
-            display: none;
-            position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            z-index: 40;
-            opacity: 0; transition: opacity 0.3s ease;
+            display: none; position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 40; opacity: 0; transition: opacity 0.3s ease;
         }
 
         /* ----- Sidebar ----- */
         .sidebar {
-            width: 280px;
-            height: 100%;
+            width: 280px; height: 100%;
             background: var(--bg-sidebar);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             border-right: 1px solid var(--border-color);
             display: flex; flex-direction: column;
-            padding: calc(env(safe-area-inset-top) + 1.5rem) 1.5rem 1.5rem 1.5rem;
+            padding: 1.5rem; padding-top: max(1.5rem, env(safe-area-inset-top));
             z-index: 50; flex-shrink: 0;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-x: hidden; /* 確保內容不會超出版面 */
         }
 
         .logo-area {
             display: flex; align-items: center; gap: 12px;
-            font-size: 1.5rem; font-weight: 700; color: var(--accent-primary);
-            margin-bottom: 2rem;
-            text-shadow: 0 0 10px rgba(129, 140, 248, 0.3);
+            font-size: 1.4rem; font-weight: 700; color: var(--accent-primary);
+            margin-bottom: 2rem; padding-left: 4px;
         }
         .logo-area svg { width: 28px; height: 28px; fill: currentColor; }
 
-        .nav-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
+        .nav-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
         
+        /* 改良版的選單項目：將「點擊進入」與「點擊刪除」的觸控區塊完美分離 */
         .nav-item {
+            display: flex; align-items: center; justify-content: space-between;
+            border-radius: 10px; transition: all 0.2s;
+        }
+        .nav-item-link {
             display: flex; align-items: center; gap: 12px;
-            padding: 12px 14px; border-radius: 10px;
-            color: var(--text-secondary); font-weight: 500;
-            transition: all 0.2s; cursor: pointer;
+            padding: 12px 14px; flex: 1; cursor: pointer;
+            color: var(--text-secondary); font-weight: 500; border-radius: 10px;
         }
-        .nav-item svg { width: 20px; height: 20px; opacity: 0.8; flex-shrink: 0; }
+        @media (hover: hover) { .nav-item-link:hover { background: var(--bg-input); color: var(--text-primary); } }
         
-        @media (hover: hover) { .nav-item:hover { background: var(--bg-input); color: var(--text-primary); } }
-        
-        .nav-item.active { 
-            background: rgba(99, 102, 241, 0.15); 
-            color: var(--accent-primary); 
-            font-weight: 600;
+        .nav-item.active .nav-item-link { 
+            background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); font-weight: 600;
         }
+        
+        /* 獨立且明確的刪除按鈕 */
+        .delete-cat-btn {
+            width: 38px; height: 38px; margin-right: 4px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); background: transparent; cursor: pointer;
+        }
+        @media (hover: hover) { .delete-cat-btn:hover { background: rgba(239, 68, 68, 0.15); color: var(--danger); } }
 
         .nav-section-title {
             font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
@@ -137,10 +129,9 @@
             margin: 1.5rem 0 0.5rem 14px;
             display: flex; justify-content: space-between; align-items: center;
         }
-
         .add-cat-btn { 
             background: var(--bg-input); color: var(--text-primary); 
-            width: 24px; height: 24px; border-radius: 6px; 
+            width: 28px; height: 28px; border-radius: 8px; 
             display: flex; align-items: center; justify-content: center;
         }
 
@@ -149,13 +140,13 @@
             display: flex; flex-direction: column; gap: 8px;
             padding-bottom: env(safe-area-inset-bottom);
         }
-
         .btn-icon-text {
             display: flex; align-items: center; gap: 10px;
             padding: 10px 14px; border-radius: 8px;
             font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;
         }
         @media (hover: hover) { .btn-icon-text:hover { background: var(--bg-input); color: var(--text-primary); } }
+        .btn-notion { color: var(--text-primary); background: rgba(255,255,255,0.05); }
 
         /* ----- Main Content ----- */
         .main-content {
@@ -163,272 +154,146 @@
             overflow: hidden; position: relative; width: 100%;
         }
 
-        /* Header */
         .header {
-            height: auto; min-height: 70px;
-            padding: max(1rem, env(safe-area-inset-top)) 2rem 1rem 2rem;
+            min-height: 70px; padding: max(1rem, env(safe-area-inset-top)) 2rem 1rem 2rem;
             display: flex; align-items: center; justify-content: space-between;
             border-bottom: 1px solid var(--border-color); gap: 1rem;
             background: var(--bg-base); z-index: 10;
         }
 
         .header-left { display: flex; align-items: center; gap: 1rem; flex: 1; }
-
         .mobile-menu-btn { 
             display: none; background: var(--bg-input); color: var(--text-primary); 
-            width: 40px; height: 40px; border-radius: 10px;
+            width: 44px; height: 44px; border-radius: 10px;
             align-items: center; justify-content: center; border: 1px solid var(--border-color);
-            flex-shrink: 0;
         }
 
-        .search-bar { position: relative; width: max(250px, 60%); max-width: 500px; }
-        .search-bar svg {
-            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-            width: 18px; height: 18px; color: var(--text-muted);
-        }
+        .search-bar { position: relative; width: max(250px, 50%); max-width: 500px; }
+        .search-bar svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted); }
         .search-bar input {
             width: 100%; padding: 12px 16px 12px 44px; border-radius: 12px;
             background: var(--bg-input); border: 1px solid var(--border-color);
             color: var(--text-primary); font-size: 0.95rem; transition: all 0.3s;
         }
-        .search-bar input:focus {
-            background: var(--bg-card); border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-        }
 
-        .header-actions { display: flex; align-items: center; gap: 0.8rem; flex-shrink: 0; }
-
+        .header-actions { display: flex; align-items: center; gap: 0.8rem; }
         .btn-primary {
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
-            color: white; padding: 12px 20px; border-radius: 10px;
-            font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;
+            color: white; padding: 12px 20px; border-radius: 10px; font-weight: 600;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); border: 1px solid rgba(255,255,255,0.1);
-            font-size: 0.95rem;
         }
-        @media (hover: hover) { .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35); } }
-        .btn-primary:active { transform: translateY(0); scale: 0.98; }
-
         .theme-toggle {
             width: 44px; height: 44px; border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            background: var(--bg-input); color: var(--text-secondary);
-            border: 1px solid var(--border-color); flex-shrink: 0;
+            background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border-color);
         }
 
-        /* Scrollable Content Area */
         .content-scroll {
             flex: 1; overflow-y: auto; overflow-x: hidden;
             padding: 2rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom));
         }
 
         /* Dashboard Stats */
-        .dashboard-stats {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem; margin-bottom: 2rem;
-        }
-        .stat-card {
-            padding: 1.5rem; border-radius: 16px; display: flex; align-items: center; gap: 1.2rem;
-            transition: transform 0.3s ease;
-        }
+        .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
+        .stat-card { padding: 1.5rem; border-radius: 16px; display: flex; align-items: center; gap: 1.2rem; cursor: pointer; transition: transform 0.2s;}
         @media (hover: hover) { .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-glow); } }
-        
-        .stat-icon {
-            width: 52px; height: 52px; border-radius: 14px;
-            background: rgba(99, 102, 241, 0.1); color: var(--accent-primary);
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-        .stat-icon svg { width: 26px; height: 26px; }
+        .stat-icon { width: 52px; height: 52px; border-radius: 14px; background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); display: flex; align-items: center; justify-content: center; }
         .stat-info h3 { font-size: 0.9rem; color: var(--text-secondary); font-weight: 500; }
         .stat-info p { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin-top: 4px; line-height: 1; }
 
-        /* Toolbar */
-        .toolbar {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+        /* Quick Categories Bar (主畫面快速進入分類) */
+        .quick-categories {
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 1.5rem;
+            scrollbar-width: none; -webkit-overflow-scrolling: touch;
         }
+        .quick-categories::-webkit-scrollbar { display: none; }
+        .quick-cat-btn {
+            padding: 8px 16px; background: var(--bg-input); border: 1px solid var(--border-color);
+            border-radius: 20px; white-space: nowrap; font-size: 0.9rem; font-weight: 500;
+            color: var(--text-secondary); cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+        }
+        .quick-cat-btn.active { background: var(--accent-primary); color: white; border-color: var(--accent-primary); }
+
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
         .view-title { font-size: 1.25rem; font-weight: 700; }
         .toolbar-actions { display: flex; gap: 0.8rem; align-items: center; }
-        .select-filter {
-            background: var(--bg-input); border: 1px solid var(--border-color);
-            padding: 10px 14px; border-radius: 10px; color: var(--text-primary);
-            font-size: 0.9rem; font-weight: 500; cursor: pointer;
-        }
-        .btn-icon {
-            width: 42px; height: 42px; border-radius: 10px;
-            background: var(--bg-input); display: flex; align-items: center; justify-content: center;
-            color: var(--text-secondary); border: 1px solid var(--border-color);
-        }
+        .select-filter { background: var(--bg-input); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 10px; color: var(--text-primary); }
+        .btn-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--bg-input); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); }
         .btn-icon.active { background: rgba(99,102,241,0.15); color: var(--accent-primary); border-color: rgba(99,102,241,0.3); }
 
         /* Cards Grid */
-        .cards-grid {
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 1.5rem; align-items: start;
-        }
-
-        /* Card Style */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; align-items: start; }
         .link-card {
-            border-radius: 16px; padding: 1.5rem; position: relative;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: flex; flex-direction: column; gap: 12px; cursor: pointer;
-            border: 1px solid var(--glass-border); user-select: none;
-            background: var(--bg-card);
+            border-radius: 16px; padding: 1.5rem; position: relative; display: flex; flex-direction: column; gap: 12px;
+            cursor: pointer; border: 1px solid var(--glass-border); background: var(--bg-card); transition: transform 0.2s;
         }
-        @media (hover: hover) {
-            .link-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-glow); border-color: rgba(99, 102, 241, 0.4); }
-            .link-card:hover .card-actions { opacity: 1; }
-        }
-        /* Mobile Active state */
-        .link-card:active { transform: scale(0.98); }
-
-        .card-header { display: flex; align-items: flex-start; gap: 12px; }
-        .favicon {
-            width: 36px; height: 36px; border-radius: 10px;
-            background: var(--bg-input); display: flex; align-items: center; justify-content: center;
-            overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color);
-        }
-        .favicon img { width: 100%; height: 100%; object-fit: cover; }
+        @media (hover: hover) { .link-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-glow); border-color: rgba(99, 102, 241, 0.4); } }
         
+        .card-header { display: flex; align-items: flex-start; gap: 12px; }
+        .favicon { width: 36px; height: 36px; border-radius: 10px; background: var(--bg-input); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border-color); }
+        .favicon img { width: 100%; height: 100%; object-fit: cover; }
         .card-title-area { flex: 1; min-width: 0; }
-        .card-title {
-            font-size: 1.05rem; font-weight: 600; color: var(--text-primary);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;
-        }
-        .card-url {
-            font-size: 0.8rem; color: var(--accent-primary); opacity: 0.8;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
+        .card-title { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+        .card-url { font-size: 0.8rem; color: var(--accent-primary); opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .card-desc {
-            font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-            overflow: hidden; flex-grow: 1; min-height: 2.7rem;
-        }
-
+        .card-desc { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 1; min-height: 2.7rem; }
         .card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-        .tag {
-            font-size: 0.75rem; padding: 4px 10px;
-            background: rgba(99, 102, 241, 0.1); color: var(--accent-primary);
-            border-radius: 20px; font-weight: 500;
-        }
+        .tag { font-size: 0.75rem; padding: 4px 10px; background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); border-radius: 20px; font-weight: 500; }
 
-        .card-footer {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-top: 8px; padding-top: 14px; border-top: 1px solid var(--border-color);
-        }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 14px; border-top: 1px solid var(--border-color); }
         .card-date { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+        
+        /* 讓卡片上的分類名稱可點擊進入 */
+        .clickable-category { color: var(--accent-primary); cursor: pointer; padding: 4px 0; font-weight: 600; }
+        .clickable-category:hover { text-decoration: underline; opacity: 0.8; }
 
-        .card-actions {
-            display: flex; gap: 6px; opacity: 1; /* Always visible on mobile, handle via media query for desktop */
-        }
-        @media (min-width: 769px) { .card-actions { opacity: 0; transition: opacity 0.2s; } }
-
-        .action-btn {
-            width: 32px; height: 32px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--text-secondary); background: var(--bg-input);
-        }
-        @media (hover: hover) { .action-btn:hover { background: var(--bg-sidebar); color: var(--text-primary); } }
+        .card-actions { display: flex; gap: 6px; }
+        .action-btn { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); background: var(--bg-input); }
         .action-btn.fav.active { color: var(--warning); background: rgba(245, 158, 11, 0.1); }
-        .action-btn.delete { color: var(--danger); }
 
-        /* Batch Select Checkbox */
-        .card-checkbox {
-            position: absolute; top: 16px; right: 16px; width: 22px; height: 22px;
-            border-radius: 6px; border: 2px solid var(--text-muted); appearance: none;
-            cursor: pointer; display: none; z-index: 2; background: var(--bg-card);
-        }
-        .card-checkbox:checked {
-            background-color: var(--accent-primary); border-color: var(--accent-primary);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
-            background-size: 14px; background-position: center; background-repeat: no-repeat;
-        }
+        /* Batch Mode */
+        .card-checkbox { position: absolute; top: 16px; right: 16px; width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--text-muted); appearance: none; cursor: pointer; display: none; z-index: 2; background: var(--bg-card); }
+        .card-checkbox:checked { background-color: var(--accent-primary); border-color: var(--accent-primary); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E"); background-size: 14px; background-position: center; background-repeat: no-repeat; }
         .batch-mode .card-checkbox { display: block; }
         .batch-mode .card-actions { display: none; }
         .batch-mode .link-card.selected { border-color: var(--accent-primary); background: rgba(99, 102, 241, 0.05); }
 
-        /* Batch Action Bar (Floating) */
         .batch-action-bar {
             position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
             background: var(--bg-sidebar); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             padding: 12px 24px; border-radius: 20px; border: 1px solid var(--glass-border);
-            display: flex; align-items: center; gap: 1rem;
-            box-shadow: var(--shadow-lg), var(--shadow-glow);
-            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 100; width: max-content; max-width: 90vw;
+            display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-lg), var(--shadow-glow);
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100; width: max-content; max-width: 90vw;
         }
         .batch-action-bar.visible { bottom: max(30px, env(safe-area-inset-bottom)); }
 
-        /* Empty State */
         .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-muted); grid-column: 1 / -1; }
         .empty-state svg { width: 72px; height: 72px; margin-bottom: 1.5rem; opacity: 0.5; color: var(--accent-primary); }
-        .empty-state h3 { color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.25rem; }
 
-        /* ================= Modals ================= */
-        dialog {
-            margin: auto; border: none; background: transparent; padding: 0; outline: none;
-            max-width: 500px; width: 92%; border-radius: 24px;
-        }
+        /* Modals */
+        dialog { margin: auto; border: none; background: transparent; padding: 0; outline: none; max-width: 500px; width: 92%; border-radius: 24px; }
         dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-        
-        .modal-content {
-            background: var(--bg-sidebar); border: 1px solid var(--glass-border);
-            border-radius: 24px; padding: 2rem; box-shadow: var(--shadow-lg);
-            color: var(--text-primary);
-        }
-
+        .modal-content { background: var(--bg-sidebar); border: 1px solid var(--glass-border); border-radius: 24px; padding: 2rem; box-shadow: var(--shadow-lg); color: var(--text-primary); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .modal-title { font-size: 1.35rem; font-weight: 700; }
-        .btn-close { 
-            background: var(--bg-input); color: var(--text-muted); font-size: 1.5rem; 
-            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-        }
-        
+        .btn-close { background: var(--bg-input); color: var(--text-muted); font-size: 1.5rem; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .form-group { margin-bottom: 1.2rem; }
         .form-group label { display: block; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
-        .form-control {
-            width: 100%; padding: 14px 16px; background: var(--bg-input);
-            border: 1px solid var(--border-color); border-radius: 12px;
-            color: var(--text-primary); font-size: 1rem; transition: all 0.2s;
-        }
+        .form-control { width: 100%; padding: 14px 16px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 1rem; transition: all 0.2s; }
         .form-control:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
         textarea.form-control { resize: vertical; min-height: 100px; }
-        
         .modal-footer { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
-        .btn-secondary { 
-            padding: 12px 20px; border-radius: 10px; background: var(--bg-input); 
-            color: var(--text-primary); font-weight: 600; border: 1px solid var(--border-color); 
-        }
+        .btn-secondary { padding: 12px 20px; border-radius: 10px; background: var(--bg-input); color: var(--text-primary); font-weight: 600; border: 1px solid var(--border-color); }
 
-        /* ================= Toasts ================= */
-        #toast-container {
-            position: fixed; bottom: max(24px, env(safe-area-inset-bottom)); right: 24px; left: 24px;
-            display: flex; flex-direction: column; gap: 10px; z-index: 1000; pointer-events: none;
-            align-items: flex-end;
-        }
-        .toast {
-            background: var(--bg-sidebar); border-left: 5px solid var(--accent-primary);
-            color: var(--text-primary); padding: 14px 20px; border-radius: 12px;
-            box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px;
-            min-width: 250px; pointer-events: auto; font-weight: 500;
-            animation: slideInUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOut 0.4s ease 3s forwards;
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-        }
-        .toast.success { border-color: var(--success); }
-        .toast.error { border-color: var(--danger); }
-        .toast.warning { border-color: var(--warning); }
-
+        /* Toasts */
+        #toast-container { position: fixed; bottom: max(24px, env(safe-area-inset-bottom)); right: 24px; left: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; pointer-events: none; align-items: flex-end; }
+        .toast { background: var(--bg-sidebar); border-left: 5px solid var(--accent-primary); color: var(--text-primary); padding: 14px 20px; border-radius: 12px; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px; min-width: 250px; pointer-events: auto; font-weight: 500; animation: slideInUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOut 0.4s ease 3s forwards; }
         @keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(20px); visibility: hidden; } }
 
-        /* ================= RWD: Mobile Devices (S24 Ultra, iPhone Pro Max) ================= */
+        /* ================= RWD: Mobile Devices ================= */
         @media (max-width: 768px) {
-            .sidebar {
-                position: fixed; left: -100%; top: 0; bottom: 0;
-                width: 85%; max-width: 320px;
-                box-shadow: var(--shadow-lg);
-            }
+            .sidebar { position: fixed; left: -100%; top: 0; bottom: 0; width: 85%; max-width: 340px; box-shadow: var(--shadow-lg); }
             .sidebar.open { transform: translateX(100%); }
             .sidebar-overlay.active { display: block; opacity: 1; }
             
@@ -439,18 +304,14 @@
             
             .content-scroll { padding: 1.2rem; }
             .dashboard-stats { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-            .stat-card { padding: 1rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-            .stat-icon { width: 40px; height: 40px; }
-            .stat-icon svg { width: 20px; height: 20px; }
+            .stat-card { padding: 1.2rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .stat-icon { width: 44px; height: 44px; }
             
             .cards-grid { grid-template-columns: 1fr; gap: 1rem; }
-            
             .toolbar { flex-direction: column; align-items: flex-start; }
             .toolbar-actions { width: 100%; justify-content: space-between; }
             
             .modal-content { padding: 1.5rem; }
-            .batch-action-bar { padding: 10px 16px; gap: 0.5rem; width: 90%; justify-content: space-between; }
-            
             #toast-container { right: 16px; left: 16px; align-items: center; }
             .toast { width: 100%; justify-content: center; }
         }
@@ -459,47 +320,56 @@
 <body>
 
     <div id="app">
-        <!-- Mobile Sidebar Overlay -->
         <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="logo-area">
-                <svg viewBox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
                 裝潢點子
             </div>
 
             <ul class="nav-menu" id="nav-menu">
                 <li class="nav-item active" data-filter="all">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                    <span>所有點子</span>
+                    <div class="nav-item-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        <span>所有點子</span>
+                    </div>
                 </li>
                 <li class="nav-item" data-filter="favorites">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                    <span>⭐ 我的收藏</span>
+                    <div class="nav-item-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        <span>⭐ 我的收藏</span>
+                    </div>
                 </li>
                 <li class="nav-item" data-filter="recent">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                    <span>最近瀏覽</span>
+                    <div class="nav-item-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>最近瀏覽</span>
+                    </div>
                 </li>
 
                 <div class="nav-section-title">
                     分類夾
                     <button class="add-cat-btn" id="btn-add-category" title="新增分類">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     </button>
                 </div>
-                <div id="category-list"></div>
+                <div id="category-list" style="display: flex; flex-direction: column; gap: 4px;"></div>
             </ul>
 
             <div class="sidebar-footer">
+                <button class="btn-icon-text btn-notion" id="btn-export-notion">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    匯出至 Notion (CSV)
+                </button>
                 <button class="btn-icon-text" id="btn-export">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    備份匯出 (JSON)
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    完整備份 (JSON)
                 </button>
                 <button class="btn-icon-text" id="btn-import">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                    資料匯入
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    資料還原
                 </button>
                 <input type="file" id="file-import" accept=".json" style="display: none;">
             </div>
@@ -510,21 +380,21 @@
             <header class="header">
                 <div class="header-left">
                     <button class="mobile-menu-btn" id="btn-mobile-menu">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                     </button>
                     <div class="header-actions">
-                        <button class="theme-toggle" id="btn-theme" title="切換主題">
-                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"></svg>
+                        <button class="theme-toggle" id="btn-theme">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"></svg>
                         </button>
                         <button class="btn-primary" id="btn-new-link">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             <span>新增點子</span>
                         </button>
                     </div>
                 </div>
 
                 <div class="search-bar">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     <input type="text" id="search-input" placeholder="搜尋裝潢風格、家具、網址...">
                 </div>
             </header>
@@ -532,19 +402,22 @@
             <div class="content-scroll" id="content-area">
                 <!-- Dashboard Stats -->
                 <section class="dashboard-stats" id="dashboard-stats">
-                    <div class="stat-card glass">
-                        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg></div>
-                        <div class="stat-info"><h3>總收藏數</h3><p id="stat-total">0</p></div>
+                    <div class="stat-card glass" id="stat-card-total">
+                        <div class="stat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg></div>
+                        <div class="stat-info"><h3>總點子數</h3><p id="stat-total">0</p></div>
                     </div>
-                    <div class="stat-card glass">
-                        <div class="stat-icon" style="color: var(--success); background: rgba(16, 185, 129, 0.1);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></div>
-                        <div class="stat-info"><h3>分類夾</h3><p id="stat-cats">0</p></div>
+                    <div class="stat-card glass" id="stat-card-cats">
+                        <div class="stat-icon" style="color: var(--success); background: rgba(16, 185, 129, 0.1);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></div>
+                        <div class="stat-info"><h3>分類夾 (點擊查看)</h3><p id="stat-cats">0</p></div>
                     </div>
-                    <div class="stat-card glass">
-                        <div class="stat-icon" style="color: var(--warning); background: rgba(245, 158, 11, 0.1);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div>
+                    <div class="stat-card glass" id="stat-card-favs">
+                        <div class="stat-icon" style="color: var(--warning); background: rgba(245, 158, 11, 0.1);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div>
                         <div class="stat-info"><h3>已星標</h3><p id="stat-favs">0</p></div>
                     </div>
                 </section>
+
+                <!-- 主畫面快速分類列 -->
+                <div class="quick-categories" id="quick-categories"></div>
 
                 <!-- Toolbar -->
                 <section class="toolbar">
@@ -556,7 +429,7 @@
                             <option value="az">名稱 A-Z</option>
                         </select>
                         <button class="btn-icon" id="btn-batch-mode" title="批次管理">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
                         </button>
                     </div>
                 </section>
@@ -565,13 +438,12 @@
                 <div class="cards-grid" id="links-grid"></div>
             </div>
             
-            <!-- Batch Action Bar -->
             <div class="batch-action-bar" id="batch-action-bar">
                 <span style="font-weight: 600; font-size: 0.95rem;">已選 <span id="batch-count" style="color:var(--accent-primary);">0</span> 項</span>
                 <div style="display:flex; gap: 8px;">
                     <button class="btn-secondary" id="btn-batch-cancel" style="padding: 8px 16px;">取消</button>
                     <button class="btn-primary" id="btn-batch-delete" style="background: var(--danger); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); padding: 8px 16px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         <span>刪除</span>
                     </button>
                 </div>
@@ -593,7 +465,7 @@
                     <div style="display:flex; gap:8px;">
                         <input type="url" class="form-control" id="link-url" required placeholder="https://..." autocomplete="off">
                         <button type="button" class="btn-secondary" id="btn-auto-fetch" title="嘗試解析網址" style="padding: 0 14px; flex-shrink:0;">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                         </button>
                     </div>
                 </div>
@@ -646,63 +518,74 @@
     <div id="toast-container"></div>
 
     <script>
-        /**
-         * 裝潢點子 - 核心應用程式邏輯
-         * 100% Vanilla JS, LocalStorage, Mobile-first
-         */
-
         const Utils = {
             generateId: () => '_' + Math.random().toString(36).substr(2, 9),
             getFaviconUrl: (url) => {
-                try {
-                    const domain = new URL(url).hostname;
-                    return `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=128`;
-                } catch { return null; }
+                try { return `https://s2.googleusercontent.com/s2/favicons?domain=${new URL(url).hostname}&sz=128`; } 
+                catch { return null; }
             },
             extractDomainName: (url) => {
                 try {
-                    let hostname = new URL(url).hostname;
-                    hostname = hostname.replace('www.', '');
-                    const parts = hostname.split('.');
-                    return parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+                    let host = new URL(url).hostname.replace('www.', '');
+                    return host.split('.')[0].charAt(0).toUpperCase() + host.split('.')[0].slice(1);
                 } catch { return ''; }
             },
-            formatDate: (timestamp) => {
-                const d = new Date(timestamp);
+            formatDate: (ts) => {
+                const d = new Date(ts);
                 return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
             },
             escapeHTML: (str) => {
                 if(!str) return '';
-                return str.replace(/[&<>'"]/g, tag => ({
-                    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-                }[tag]));
+                return String(str).replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
             }
         };
 
         class StorageService {
-            constructor(namespace = 'zhuanghuang_ideas_data') {
-                this.namespace = namespace;
-                this.init();
-            }
+            constructor() { this.namespace = 'zhuanghuang_ideas_data'; this.init(); }
             init() {
                 if (!localStorage.getItem(this.namespace)) {
-                    this.save({
-                        links: [],
-                        categories: [{ id: 'cat_default', name: '預設分類' }],
-                        settings: { theme: 'dark', sort: 'newest' }
-                    });
+                    this.save({ links: [], categories: [{ id: 'cat_default', name: '預設分類' }], settings: { theme: 'dark', sort: 'newest' } });
                 }
             }
             load() { return JSON.parse(localStorage.getItem(this.namespace)); }
             save(data) { localStorage.setItem(this.namespace, JSON.stringify(data)); }
+            
             exportData() {
                 const data = this.load();
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                this.downloadBlob(blob, `裝潢點子_完整備份_${new Date().toISOString().slice(0,10)}.json`);
+            }
+
+            exportToNotion() {
+                const data = this.load();
+                if (!data.links || data.links.length === 0) return alert('沒有資料可匯出');
+
+                const headers = ['標題 (Title)', '網址 (URL)', '描述 (Description)', '分類 (Category)', '標籤 (Tags)', '是否收藏 (Favorite)', '建立日期 (Created At)'];
+                
+                const escapeCSV = (field) => {
+                    if (field === null || field === undefined) return '""';
+                    return `"${String(field).replace(/"/g, '""')}"`;
+                };
+
+                const rows = data.links.map(link => {
+                    const catName = data.categories.find(c => c.id === link.category)?.name || '未分類';
+                    return [
+                        escapeCSV(link.title), escapeCSV(link.url), escapeCSV(link.description),
+                        escapeCSV(catName), escapeCSV((link.tags || []).join(', ')),
+                        escapeCSV(link.favorite ? 'Yes' : 'No'), escapeCSV(new Date(link.createdAt).toLocaleDateString('zh-TW'))
+                    ].join(',');
+                });
+
+                // \uFEFF 是 BOM (Byte Order Mark)，確保 Notion/Excel 用 UTF-8 讀取中文字
+                const csvContent = '\uFEFF' + headers.join(',') + '\n' + rows.join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                this.downloadBlob(blob, `裝潢點子_Notion匯出_${new Date().toISOString().slice(0,10)}.csv`);
+            }
+
+            downloadBlob(blob, filename) {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = url;
-                a.download = `裝潢點子_備份_${new Date().toISOString().slice(0,10)}.json`;
-                a.click();
+                a.href = url; a.download = filename; a.click();
                 URL.revokeObjectURL(url);
             }
         }
@@ -711,86 +594,84 @@
             constructor() {
                 this.storage = new StorageService();
                 this.data = this.storage.load();
+                this.state = { filterType: 'all', filterValue: null, searchQuery: '', batchMode: false, selectedIds: new Set(), draggedId: null };
                 
-                this.state = {
-                    filterType: 'all', filterValue: null,
-                    searchQuery: '', batchMode: false,
-                    selectedIds: new Set(), draggedId: null
-                };
-
                 this.els = {
-                    grid: document.getElementById('links-grid'),
-                    catList: document.getElementById('category-list'),
-                    viewTitle: document.getElementById('view-title'),
-                    searchInput: document.getElementById('search-input'),
-                    sortSelect: document.getElementById('sort-select'),
-                    batchBtn: document.getElementById('btn-batch-mode'),
-                    batchBar: document.getElementById('batch-action-bar'),
-                    themeBtn: document.getElementById('btn-theme'),
-                    sidebar: document.getElementById('sidebar'),
+                    grid: document.getElementById('links-grid'), catList: document.getElementById('category-list'),
+                    quickCats: document.getElementById('quick-categories'), viewTitle: document.getElementById('view-title'),
+                    searchInput: document.getElementById('search-input'), sortSelect: document.getElementById('sort-select'),
+                    batchBtn: document.getElementById('btn-batch-mode'), batchBar: document.getElementById('batch-action-bar'),
+                    themeBtn: document.getElementById('btn-theme'), sidebar: document.getElementById('sidebar'),
                     sidebarOverlay: document.getElementById('sidebar-overlay'),
-                    
-                    statTotal: document.getElementById('stat-total'),
-                    statCats: document.getElementById('stat-cats'),
-                    statFavs: document.getElementById('stat-favs'),
-
-                    modalLink: document.getElementById('modal-link'),
-                    formLink: document.getElementById('form-link'),
-                    modalCat: document.getElementById('modal-category'),
-                    formCat: document.getElementById('form-category')
+                    statTotal: document.getElementById('stat-total'), statCats: document.getElementById('stat-cats'), statFavs: document.getElementById('stat-favs'),
+                    modalLink: document.getElementById('modal-link'), formLink: document.getElementById('form-link'),
+                    modalCat: document.getElementById('modal-category'), formCat: document.getElementById('form-category')
                 };
-
                 this.init();
             }
 
             init() {
                 this.applyTheme(this.data.settings.theme || 'dark');
                 this.els.sortSelect.value = this.data.settings.sort || 'newest';
-                
                 this.bindGlobalEvents();
                 this.renderCategories();
                 this.updateDashboard();
                 this.renderLinks();
             }
 
-            saveState() {
-                this.storage.save(this.data);
-                this.updateDashboard();
-            }
-
-            // --- UI Rendering ---
+            saveState() { this.storage.save(this.data); this.updateDashboard(); }
 
             renderCategories() {
+                // 1. 更新側邊欄 (Sidebar)
                 this.els.catList.innerHTML = '';
                 this.data.categories.forEach(cat => {
                     const count = this.data.links.filter(l => l.category === cat.id).length;
                     const isActive = this.state.filterType === 'category' && this.state.filterValue === cat.id;
                     const li = document.createElement('li');
                     li.className = `nav-item ${isActive ? 'active' : ''}`;
+                    
+                    // 將「進入分類」與「刪除分類」的觸控區域完美分開
                     li.innerHTML = `
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                        <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${Utils.escapeHTML(cat.name)}</span>
-                        <span style="font-size: 0.75rem; background: var(--bg-card); padding: 2px 8px; border-radius: 12px; font-weight:600;">${count}</span>
+                        <div class="nav-item-link">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                            <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${Utils.escapeHTML(cat.name)}</span>
+                            <span style="font-size: 0.75rem; background: var(--bg-card); padding: 2px 8px; border-radius: 12px; font-weight:600;">${count}</span>
+                        </div>
                     `;
                     
+                    // 點擊左側 80% 進入分類
+                    li.querySelector('.nav-item-link').onclick = () => this.setFilter('category', cat.id, cat.name);
+
+                    // 獨立的刪除按鈕
                     if(cat.id !== 'cat_default') {
-                        const delBtn = document.createElement('div');
-                        delBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-                        delBtn.style.cssText = 'color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px;';
+                        const delBtn = document.createElement('button');
+                        delBtn.className = 'delete-cat-btn';
+                        delBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
                         delBtn.onclick = (e) => {
                             e.stopPropagation();
-                            if(confirm(`確定刪除分類「${cat.name}」？底下的點子將移至預設分類。`)) this.deleteCategory(cat.id);
+                            if(confirm(`確定刪除分類「${cat.name}」？\n此分類下的點子將自動移至預設分類。`)) this.deleteCategory(cat.id);
                         };
                         li.appendChild(delBtn);
                     }
-
-                    li.onclick = () => this.setFilter('category', cat.id, cat.name);
                     this.els.catList.appendChild(li);
                 });
 
-                // Update select dropdown
-                const select = document.getElementById('link-category');
-                select.innerHTML = this.data.categories.map(c => `<option value="${c.id}">${Utils.escapeHTML(c.name)}</option>`).join('');
+                // 2. 更新主畫面 Quick Categories (方便手機直接點擊進入下一層)
+                this.els.quickCats.innerHTML = `<button class="quick-cat-btn ${this.state.filterType === 'all' ? 'active' : ''}" data-type="all">所有點子</button>`;
+                this.data.categories.forEach(cat => {
+                    const isActive = this.state.filterType === 'category' && this.state.filterValue === cat.id;
+                    this.els.quickCats.innerHTML += `<button class="quick-cat-btn ${isActive ? 'active' : ''}" data-type="category" data-val="${cat.id}" data-name="${Utils.escapeHTML(cat.name)}">${Utils.escapeHTML(cat.name)}</button>`;
+                });
+                
+                this.els.quickCats.querySelectorAll('.quick-cat-btn').forEach(btn => {
+                    btn.onclick = () => {
+                        if(btn.dataset.type === 'all') this.setFilter('all');
+                        else this.setFilter('category', btn.dataset.val, btn.dataset.name);
+                    };
+                });
+
+                // 3. 更新新增表單的下拉選單
+                document.getElementById('link-category').innerHTML = this.data.categories.map(c => `<option value="${c.id}">${Utils.escapeHTML(c.name)}</option>`).join('');
             }
 
             updateDashboard() {
@@ -802,29 +683,19 @@
             getFilteredLinks() {
                 let links = [...this.data.links];
                 const q = this.state.searchQuery.toLowerCase();
+                if (q) links = links.filter(l => (l.title && l.title.toLowerCase().includes(q)) || (l.description && l.description.toLowerCase().includes(q)) || (l.url && l.url.toLowerCase().includes(q)) || (l.tags && l.tags.some(t => t.toLowerCase().includes(q))));
                 
-                if (q) {
-                    links = links.filter(l => 
-                        (l.title && l.title.toLowerCase().includes(q)) || 
-                        (l.description && l.description.toLowerCase().includes(q)) ||
-                        (l.url && l.url.toLowerCase().includes(q)) ||
-                        (l.tags && l.tags.some(t => t.toLowerCase().includes(q)))
-                    );
-                }
-
                 if (this.state.filterType === 'category') links = links.filter(l => l.category === this.state.filterValue);
                 else if (this.state.filterType === 'favorites') links = links.filter(l => l.favorite);
                 else if (this.state.filterType === 'recent') {
                     const recent = JSON.parse(localStorage.getItem('zhuanghuang_recent') || '[]');
-                    links = links.filter(l => recent.includes(l.id)).sort((a, b) => recent.indexOf(a.id) - recent.indexOf(b.id));
-                    return links; // Ignore standard sorting for recent
+                    return links.filter(l => recent.includes(l.id)).sort((a, b) => recent.indexOf(a.id) - recent.indexOf(b.id));
                 } else if (this.state.filterType === 'tag') links = links.filter(l => l.tags.includes(this.state.filterValue));
 
                 const sort = this.els.sortSelect.value;
                 if (sort === 'newest') links.sort((a, b) => b.createdAt - a.createdAt);
                 if (sort === 'oldest') links.sort((a, b) => a.createdAt - b.createdAt);
                 if (sort === 'az') links.sort((a, b) => a.title.localeCompare(b.title));
-
                 return links;
             }
 
@@ -833,13 +704,7 @@
                 const links = this.getFilteredLinks();
 
                 if (links.length === 0) {
-                    this.els.grid.innerHTML = `
-                        <div class="empty-state">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                            <h3>這裡還沒有點子</h3>
-                            <p>點擊右上角「新增點子」開始收集裝潢靈感吧！</p>
-                        </div>
-                    `;
+                    this.els.grid.innerHTML = `<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><h3>這裡還沒有點子</h3><p>點擊右上角「新增點子」開始收集裝潢靈感吧！</p></div>`;
                     return;
                 }
 
@@ -851,10 +716,9 @@
                     card.dataset.id = link.id;
                     if(!this.state.batchMode && window.innerWidth > 768) card.draggable = true;
 
-                    const defaultIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`;
+                    const defaultIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`;
                     const iconUrl = Utils.getFaviconUrl(link.url);
                     const imgTag = iconUrl ? `<img src="${iconUrl}" onerror="this.outerHTML='${defaultIcon}'" alt="">` : defaultIcon;
-
                     const tagsHtml = (link.tags || []).map(t => `<span class="tag" data-tag="${t}">${Utils.escapeHTML(t)}</span>`).join('');
                     const catName = this.data.categories.find(c => c.id === link.category)?.name || '未分類';
 
@@ -870,19 +734,18 @@
                         ${link.description ? `<div class="card-desc">${Utils.escapeHTML(link.description)}</div>` : '<div style="flex-grow:1"></div>'}
                         ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
                         <div class="card-footer">
-                            <span class="card-date">${Utils.escapeHTML(catName)} • ${Utils.formatDate(link.createdAt)}</span>
+                            <span class="card-date clickable-category" data-cat="${link.category}" data-catname="${Utils.escapeHTML(catName)}">📁 ${Utils.escapeHTML(catName)}</span>
                             <div class="card-actions">
                                 <button class="action-btn fav ${link.favorite ? 'active' : ''}" data-action="fav">
-                                    <svg viewBox="0 0 24 24" fill="${link.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${link.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                                 </button>
                                 <button class="action-btn" data-action="edit">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                 </button>
                             </div>
                         </div>
                     `;
 
-                    // Interaction logic
                     card.addEventListener('click', (e) => {
                         if (this.state.batchMode) {
                             const cb = card.querySelector('.card-checkbox');
@@ -899,21 +762,23 @@
                             return;
                         }
 
-                        const tagEl = e.target.closest('.tag');
-                        if (tagEl) {
+                        // 點擊分類進入下一層
+                        const catLink = e.target.closest('.clickable-category');
+                        if (catLink) {
                             e.stopPropagation();
-                            this.setFilter('tag', tagEl.dataset.tag, `#${tagEl.dataset.tag}`);
+                            this.setFilter('category', catLink.dataset.cat, catLink.dataset.catname);
                             return;
                         }
+
+                        const tagEl = e.target.closest('.tag');
+                        if (tagEl) { e.stopPropagation(); this.setFilter('tag', tagEl.dataset.tag, `#${tagEl.dataset.tag}`); return; }
 
                         this.openUrl(link.url, link.id);
                     });
 
-                    // Desktop Drag & Drop
                     card.addEventListener('dragstart', (e) => {
                         if(this.state.batchMode || window.innerWidth <= 768) { e.preventDefault(); return; }
-                        this.state.draggedId = link.id;
-                        e.dataTransfer.effectAllowed = 'move';
+                        this.state.draggedId = link.id; e.dataTransfer.effectAllowed = 'move';
                         setTimeout(() => card.style.opacity = '0.4', 0);
                     });
                     card.addEventListener('dragover', (e) => {
@@ -922,60 +787,38 @@
                     });
                     card.addEventListener('dragleave', () => card.style.borderColor = 'var(--glass-border)');
                     card.addEventListener('drop', (e) => {
-                        e.preventDefault();
-                        card.style.borderColor = 'var(--glass-border)';
-                        if (this.state.draggedId && this.state.draggedId !== link.id) {
-                            this.reorderLinks(this.state.draggedId, link.id);
-                        }
+                        e.preventDefault(); card.style.borderColor = 'var(--glass-border)';
+                        if (this.state.draggedId && this.state.draggedId !== link.id) this.reorderLinks(this.state.draggedId, link.id);
                     });
-                    card.addEventListener('dragend', () => {
-                        card.style.opacity = '1';
-                        this.state.draggedId = null;
-                    });
+                    card.addEventListener('dragend', () => { card.style.opacity = '1'; this.state.draggedId = null; });
 
                     frag.appendChild(card);
                 });
                 this.els.grid.appendChild(frag);
             }
 
-            // --- Core Actions ---
-
             saveLink(data) {
                 const isNew = !data.id;
                 const obj = {
-                    id: data.id || Utils.generateId(),
-                    title: data.title, url: data.url, description: data.description,
-                    category: data.category || 'cat_default',
-                    tags: data.tags ? data.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-                    favorite: data.favorite || false,
-                    createdAt: data.createdAt || Date.now()
+                    id: data.id || Utils.generateId(), title: data.title, url: data.url, description: data.description,
+                    category: data.category || 'cat_default', tags: data.tags ? data.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+                    favorite: data.favorite || false, createdAt: data.createdAt || Date.now()
                 };
 
-                if (isNew) {
-                    this.data.links.unshift(obj);
-                    this.showToast('點子已儲存', 'success');
-                } else {
+                if (isNew) { this.data.links.unshift(obj); this.showToast('點子已儲存', 'success'); } 
+                else {
                     const idx = this.data.links.findIndex(l => l.id === data.id);
                     if (idx > -1) {
-                        obj.createdAt = this.data.links[idx].createdAt;
-                        obj.favorite = this.data.links[idx].favorite;
-                        this.data.links[idx] = obj;
-                        this.showToast('點子已更新', 'success');
+                        obj.createdAt = this.data.links[idx].createdAt; obj.favorite = this.data.links[idx].favorite;
+                        this.data.links[idx] = obj; this.showToast('點子已更新', 'success');
                     }
                 }
                 this.saveState(); this.renderLinks(); this.renderCategories();
             }
 
-            deleteLinks(ids) {
-                this.data.links = this.data.links.filter(l => !ids.includes(l.id));
-                this.saveState(); this.renderLinks(); this.renderCategories();
-            }
-
-            toggleFav(id) {
-                const link = this.data.links.find(l => l.id === id);
-                if (link) { link.favorite = !link.favorite; this.saveState(); this.renderLinks(); }
-            }
-
+            deleteLinks(ids) { this.data.links = this.data.links.filter(l => !ids.includes(l.id)); this.saveState(); this.renderLinks(); this.renderCategories(); }
+            toggleFav(id) { const link = this.data.links.find(l => l.id === id); if (link) { link.favorite = !link.favorite; this.saveState(); this.renderLinks(); } }
+            
             saveCategory(name) {
                 if (!name.trim()) return;
                 this.data.categories.push({ id: Utils.generateId(), name });
@@ -1000,38 +843,34 @@
                 }
             }
 
-            // --- Event Bindings ---
-
             bindGlobalEvents() {
-                // Sidebar Nav
+                // Sidebar Nav Links
                 document.querySelectorAll('#nav-menu .nav-item[data-filter]').forEach(el => {
-                    el.onclick = () => {
+                    el.querySelector('.nav-item-link').onclick = () => {
                         const f = el.dataset.filter;
-                        const t = f==='favorites' ? '⭐ 我的收藏' : f==='recent' ? '最近瀏覽' : '所有點子';
-                        this.setFilter(f, null, t);
+                        this.setFilter(f, null, f==='favorites' ? '⭐ 我的收藏' : f==='recent' ? '最近瀏覽' : '所有點子');
                     };
                 });
 
-                // Topbar
                 let searchTimeout;
                 this.els.searchInput.addEventListener('input', (e) => {
                     clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        this.state.searchQuery = e.target.value;
-                        this.renderLinks();
-                    }, 300);
+                    searchTimeout = setTimeout(() => { this.state.searchQuery = e.target.value; this.renderLinks(); }, 300);
                 });
 
-                this.els.sortSelect.addEventListener('change', (e) => {
-                    this.data.settings.sort = e.target.value;
-                    this.saveState(); this.renderLinks();
-                });
+                this.els.sortSelect.addEventListener('change', (e) => { this.data.settings.sort = e.target.value; this.saveState(); this.renderLinks(); });
 
                 this.els.themeBtn.addEventListener('click', () => {
                     const newTheme = this.data.settings.theme === 'dark' ? 'light' : 'dark';
-                    this.data.settings.theme = newTheme;
-                    this.saveState(); this.applyTheme(newTheme);
+                    this.data.settings.theme = newTheme; this.saveState(); this.applyTheme(newTheme);
                 });
+
+                // Dashboard Cards click (開側邊欄或跳轉)
+                document.getElementById('stat-card-cats').addEventListener('click', () => {
+                    if (window.innerWidth <= 768) { this.els.sidebar.classList.add('open'); this.els.sidebarOverlay.classList.add('active'); }
+                    document.getElementById('category-list').scrollIntoView({behavior: 'smooth', block: 'center'});
+                });
+                document.getElementById('stat-card-favs').addEventListener('click', () => this.setFilter('favorites', null, '⭐ 我的收藏'));
 
                 // Batch Mode
                 this.els.batchBtn.addEventListener('click', () => this.toggleBatchMode());
@@ -1040,26 +879,20 @@
                     if(this.state.selectedIds.size === 0) return;
                     if(confirm(`確定要刪除選取的 ${this.state.selectedIds.size} 個點子嗎？`)) {
                         this.deleteLinks(Array.from(this.state.selectedIds));
-                        this.toggleBatchMode(false);
-                        this.showToast('已刪除所選項', 'success');
+                        this.toggleBatchMode(false); this.showToast('已刪除所選項', 'success');
                     }
                 });
 
                 // Modals
                 document.getElementById('btn-new-link').addEventListener('click', () => this.openLinkModal());
-                document.getElementById('btn-add-category').addEventListener('click', () => {
-                    this.els.formCat.reset(); this.els.modalCat.showModal();
-                });
+                document.getElementById('btn-add-category').addEventListener('click', () => { this.els.formCat.reset(); this.els.modalCat.showModal(); });
                 
                 this.els.formLink.addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.saveLink({
-                        id: document.getElementById('link-id').value,
-                        title: document.getElementById('link-title').value,
-                        url: document.getElementById('link-url').value,
-                        category: document.getElementById('link-category').value,
-                        tags: document.getElementById('link-tags').value,
-                        description: document.getElementById('link-desc').value
+                        id: document.getElementById('link-id').value, title: document.getElementById('link-title').value,
+                        url: document.getElementById('link-url').value, category: document.getElementById('link-category').value,
+                        tags: document.getElementById('link-tags').value, description: document.getElementById('link-desc').value
                     });
                     this.els.modalLink.close();
                 });
@@ -1070,43 +903,34 @@
                     this.els.modalCat.close();
                 });
 
-                const closeBtns = ['btn-close-link', 'btn-cancel-link', 'btn-close-category', 'btn-cancel-category'];
-                closeBtns.forEach(id => {
+                ['btn-close-link', 'btn-cancel-link', 'btn-close-category', 'btn-cancel-category'].forEach(id => {
                     const el = document.getElementById(id);
                     if(el) el.addEventListener('click', (e) => e.target.closest('dialog').close());
                 });
 
-                // Auto Fetch Logic (Client-side fallback due to CORS)
                 document.getElementById('btn-auto-fetch').addEventListener('click', () => {
                     const url = document.getElementById('link-url').value;
                     const titleEl = document.getElementById('link-title');
                     if(!url) return this.showToast('請先輸入網址', 'warning');
-                    
                     const domainName = Utils.extractDomainName(url);
-                    if(domainName && !titleEl.value) {
-                        titleEl.value = domainName;
-                        this.showToast('已自動帶入網域名稱');
-                    } else if (titleEl.value) {
-                        this.showToast('標題已有內容');
-                    } else {
-                        this.showToast('無法解析此網址格式', 'error');
-                    }
+                    if(domainName && !titleEl.value) { titleEl.value = domainName; this.showToast('已自動帶入網域名稱'); } 
+                    else if (titleEl.value) { this.showToast('標題已有內容'); } 
+                    else { this.showToast('無法解析此網址格式', 'error'); }
                 });
 
                 // Import/Export
                 document.getElementById('btn-export').addEventListener('click', () => this.storage.exportData());
+                document.getElementById('btn-export-notion').addEventListener('click', () => this.storage.exportToNotion());
                 const fileInput = document.getElementById('file-import');
                 document.getElementById('btn-import').addEventListener('click', () => fileInput.click());
                 fileInput.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if(!file) return;
+                    const file = e.target.files[0]; if(!file) return;
                     const reader = new FileReader();
                     reader.onload = (ev) => {
                         try {
                             const parsed = JSON.parse(ev.target.result);
                             if(parsed && parsed.links && parsed.categories) {
-                                this.data = parsed; this.saveState(); this.init();
-                                this.showToast('資料還原成功', 'success');
+                                this.data = parsed; this.saveState(); this.init(); this.showToast('資料還原成功', 'success');
                             } else throw new Error();
                         } catch(err) { this.showToast('檔案格式不正確', 'error'); }
                         fileInput.value = '';
@@ -1114,62 +938,36 @@
                     reader.readAsText(file);
                 });
 
-                // Mobile Menu Toggle
-                document.getElementById('btn-mobile-menu').addEventListener('click', () => {
-                    this.els.sidebar.classList.add('open');
-                    this.els.sidebarOverlay.classList.add('active');
-                });
-                this.els.sidebarOverlay.addEventListener('click', () => {
-                    this.els.sidebar.classList.remove('open');
-                    this.els.sidebarOverlay.classList.remove('active');
-                });
+                // Mobile Menu
+                document.getElementById('btn-mobile-menu').addEventListener('click', () => { this.els.sidebar.classList.add('open'); this.els.sidebarOverlay.classList.add('active'); });
+                this.els.sidebarOverlay.addEventListener('click', () => { this.els.sidebar.classList.remove('open'); this.els.sidebarOverlay.classList.remove('active'); });
             }
-
-            // --- Helpers ---
 
             setFilter(type, value = null, title = '') {
                 this.state.filterType = type; this.state.filterValue = value;
                 this.els.viewTitle.textContent = title || (type === 'all' ? '所有點子' : value);
                 
-                document.querySelectorAll('#nav-menu .nav-item').forEach(el => el.classList.remove('active'));
-                if(type === 'category') {
-                    const li = Array.from(this.els.catList.children).find(el => el.textContent.includes(value));
-                    if(li) li.classList.add('active');
-                } else if(['all','favorites','recent'].includes(type)) {
-                    const el = document.querySelector(`.nav-item[data-filter="${type}"]`);
-                    if(el) el.classList.add('active');
-                }
+                // Update Quick Categories UI
+                this.renderCategories(); 
 
                 this.state.searchQuery = ''; this.els.searchInput.value = '';
-                
-                // Close mobile menu
-                this.els.sidebar.classList.remove('open');
-                this.els.sidebarOverlay.classList.remove('active');
-
+                this.els.sidebar.classList.remove('open'); this.els.sidebarOverlay.classList.remove('active');
                 this.renderLinks();
             }
 
             openLinkModal(data = null) {
                 this.els.formLink.reset();
                 const titleEl = document.getElementById('modal-link-title');
-                
-                // Ensure dropdown has latest options before showing
-                document.getElementById('link-category').innerHTML = this.data.categories.map(c => `<option value="${c.id}">${Utils.escapeHTML(c.name)}</option>`).join('');
-
                 if (data) {
                     titleEl.textContent = '編輯裝潢點子';
-                    document.getElementById('link-id').value = data.id;
-                    document.getElementById('link-url').value = data.url;
-                    document.getElementById('link-title').value = data.title;
-                    document.getElementById('link-category').value = data.category;
-                    document.getElementById('link-tags').value = (data.tags || []).join(', ');
-                    document.getElementById('link-desc').value = data.description || '';
+                    document.getElementById('link-id').value = data.id; document.getElementById('link-url').value = data.url;
+                    document.getElementById('link-title').value = data.title; document.getElementById('link-category').value = data.category;
+                    document.getElementById('link-tags').value = (data.tags || []).join(', '); document.getElementById('link-desc').value = data.description || '';
                 } else {
                     titleEl.textContent = '新增裝潢點子';
                     document.getElementById('link-id').value = '';
                     document.getElementById('link-category').value = this.state.filterType === 'category' ? this.state.filterValue : 'cat_default';
                 }
-                
                 this.els.modalLink.showModal();
             }
 
@@ -1183,38 +981,26 @@
             toggleBatchMode(force) {
                 this.state.batchMode = force !== undefined ? force : !this.state.batchMode;
                 this.state.selectedIds.clear();
-                
                 if (this.state.batchMode) {
-                    this.els.grid.classList.add('batch-mode');
-                    this.els.batchBtn.classList.add('active');
-                    this.els.batchBar.classList.add('visible');
-                    document.getElementById('batch-count').textContent = '0';
+                    this.els.grid.classList.add('batch-mode'); this.els.batchBtn.classList.add('active'); this.els.batchBar.classList.add('visible'); document.getElementById('batch-count').textContent = '0';
                 } else {
-                    this.els.grid.classList.remove('batch-mode');
-                    this.els.batchBtn.classList.remove('active');
-                    this.els.batchBar.classList.remove('visible');
-                    document.querySelectorAll('.card-checkbox').forEach(cb => cb.checked = false);
-                    document.querySelectorAll('.link-card.selected').forEach(c => c.classList.remove('selected'));
+                    this.els.grid.classList.remove('batch-mode'); this.els.batchBtn.classList.remove('active'); this.els.batchBar.classList.remove('visible');
+                    document.querySelectorAll('.card-checkbox').forEach(cb => cb.checked = false); document.querySelectorAll('.link-card.selected').forEach(c => c.classList.remove('selected'));
                 }
             }
 
             toggleBatchSelect(id, isSelected) {
                 if(isSelected) this.state.selectedIds.add(id); else this.state.selectedIds.delete(id);
                 const card = document.querySelector(`.link-card[data-id="${id}"]`);
-                if(card) {
-                    if(isSelected) card.classList.add('selected'); else card.classList.remove('selected');
-                }
+                if(card) { if(isSelected) card.classList.add('selected'); else card.classList.remove('selected'); }
                 document.getElementById('batch-count').textContent = this.state.selectedIds.size;
             }
 
             applyTheme(theme) {
                 document.documentElement.setAttribute('data-theme', theme);
                 const icon = this.els.themeBtn.querySelector('svg');
-                if(theme === 'dark') {
-                    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-                } else {
-                    icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
-                }
+                if(theme === 'dark') icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+                else icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
             }
 
             showToast(msg, type = 'info') {
@@ -1222,9 +1008,9 @@
                 const toast = document.createElement('div');
                 toast.className = `toast ${type}`;
                 let icon = '';
-                if(type === 'success') icon = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-                else if(type === 'error') icon = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--danger)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
-                else icon = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--accent-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+                if(type === 'success') icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                else if(type === 'error') icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--danger)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+                else icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--accent-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
 
                 toast.innerHTML = `${icon} <span>${msg}</span>`;
                 container.appendChild(toast);
