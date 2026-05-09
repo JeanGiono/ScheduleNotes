@@ -84,7 +84,6 @@
             background: var(--bg-sidebar);
             border-right: 1px solid var(--border-color);
             display: flex; flex-direction: column;
-            /* 加入 env(safe-area-inset-left) 確保左側不會被螢幕邊緣切掉 */
             padding: max(1.5rem, env(safe-area-inset-top)) 1.5rem 1.5rem max(1.5rem, env(safe-area-inset-left));
             z-index: 50; flex-shrink: 0;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -106,7 +105,7 @@
         }
         .nav-item-link {
             display: flex; align-items: center; gap: 12px;
-            padding: 12px 14px; flex: 1; cursor: pointer;
+            padding: 12px 14px; flex: 1; cursor: pointer; min-width: 0;
             color: var(--text-secondary); font-weight: 500; border-radius: 10px;
         }
         @media (hover: hover) { .nav-item-link:hover { background: var(--bg-input); color: var(--text-primary); } }
@@ -115,12 +114,17 @@
             background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); font-weight: 600;
         }
         
-        .delete-cat-btn {
-            width: 38px; height: 38px; margin-right: 4px; border-radius: 8px;
+        /* 分類操作按鈕區域 (修改 & 刪除) */
+        .cat-actions { display: flex; align-items: center; gap: 2px; margin-right: 4px; flex-shrink: 0; }
+        .edit-cat-btn, .delete-cat-btn {
+            width: 32px; height: 32px; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             color: var(--text-muted); background: transparent; cursor: pointer;
         }
-        @media (hover: hover) { .delete-cat-btn:hover { background: rgba(239, 68, 68, 0.15); color: var(--danger); } }
+        @media (hover: hover) { 
+            .edit-cat-btn:hover { background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); }
+            .delete-cat-btn:hover { background: rgba(239, 68, 68, 0.15); color: var(--danger); } 
+        }
 
         .nav-section-title {
             font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
@@ -291,17 +295,12 @@
         /* ================= RWD: Mobile Devices ================= */
         @media (max-width: 768px) {
             .sidebar { 
-                /* 關鍵修復：保證從最左邊開始，不再受到寬度位移影響 */
-                position: fixed; 
-                left: 0; 
-                top: 0; bottom: 0; 
+                position: fixed; left: 0; top: 0; bottom: 0; 
                 width: 85vw; max-width: 340px; 
-                transform: translateX(-100%); /* 隱藏在左外側 */
+                transform: translateX(-100%); /* 確保不會裁切畫面 */
                 box-shadow: var(--shadow-lg); 
             }
-            .sidebar.open { 
-                transform: translateX(0); /* 滑出時精準回到 0 點，不會裁切 */
-            }
+            .sidebar.open { transform: translateX(0); }
             .sidebar-overlay.active { display: block; opacity: 1; }
             
             .header { padding: max(1rem, env(safe-area-inset-top)) 1.2rem 1rem 1.2rem; flex-wrap: wrap; }
@@ -366,7 +365,6 @@
             </ul>
 
             <div class="sidebar-footer">
-                <!-- 更改為 Markdown 匯出 -->
                 <button class="btn-icon-text btn-notion" id="btn-export-notion">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
                     匯出至 Notion (.md)
@@ -499,20 +497,22 @@
         </div>
     </dialog>
 
+    <!-- 分類管理 Modal (整合新增與修改) -->
     <dialog id="modal-category">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">新增分類</h3>
+                <h3 class="modal-title" id="modal-cat-title">新增分類</h3>
                 <button class="btn-close" id="btn-close-category" type="button">×</button>
             </div>
             <form id="form-category">
+                <input type="hidden" id="cat-id-input">
                 <div class="form-group">
                     <label>分類名稱 *</label>
                     <input type="text" class="form-control" id="cat-name" required placeholder="例如：廚房設計" autocomplete="off">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" id="btn-cancel-category">取消</button>
-                    <button type="submit" class="btn-primary">建立</button>
+                    <button type="submit" class="btn-primary">儲存</button>
                 </div>
             </form>
         </div>
@@ -559,18 +559,14 @@
                 this.downloadBlob(blob, `裝潢點子_完整備份_${new Date().toISOString().slice(0,10)}.json`);
             }
 
-            // 【功能更新】匯出為 Markdown (.md) 以供 Notion 使用
             exportToNotion() {
                 const data = this.load();
                 if (!data.links || data.links.length === 0) return alert('沒有點子可匯出');
 
                 let mdContent = '# 裝潢點子庫\n\n';
-                
-                // 建立 Markdown 表格標頭
                 mdContent += '| 標題 | 網址 | 分類 | 標籤 | 靈感筆記 | 收藏 | 建立日期 |\n';
                 mdContent += '|---|---|---|---|---|:---:|---|\n';
 
-                // 處理 Markdown 中的特殊字元 (例如表格符號 | 和換行)
                 const escapeMD = (str) => {
                     if(!str) return '';
                     return String(str).replace(/\|/g, '&#124;').replace(/\n/g, '<br>');
@@ -579,7 +575,7 @@
                 data.links.forEach(link => {
                     const catName = data.categories.find(c => c.id === link.category)?.name || '未分類';
                     
-                    const title = `[${escapeMD(link.title)}](${link.url})`; // 將標題包裝成 Markdown 連結
+                    const title = `[${escapeMD(link.title)}](${link.url})`; 
                     const url = escapeMD(link.url);
                     const cat = escapeMD(catName);
                     const tags = escapeMD((link.tags || []).join(', '));
@@ -651,15 +647,32 @@
                     
                     li.querySelector('.nav-item-link').onclick = () => this.setFilter('category', cat.id, cat.name);
 
+                    // 如果不是預設分類，加入修改與刪除按鈕
                     if(cat.id !== 'cat_default') {
+                        const actionDiv = document.createElement('div');
+                        actionDiv.className = 'cat-actions';
+
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'edit-cat-btn';
+                        editBtn.title = '修改名稱';
+                        editBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+                        editBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            this.openCatModal(cat);
+                        };
+
                         const delBtn = document.createElement('button');
                         delBtn.className = 'delete-cat-btn';
+                        delBtn.title = '刪除分類';
                         delBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
                         delBtn.onclick = (e) => {
                             e.stopPropagation();
                             if(confirm(`確定刪除分類「${cat.name}」？\n此分類下的點子將自動移至預設分類。`)) this.deleteCategory(cat.id);
                         };
-                        li.appendChild(delBtn);
+
+                        actionDiv.appendChild(editBtn);
+                        actionDiv.appendChild(delBtn);
+                        li.appendChild(actionDiv);
                     }
                     this.els.catList.appendChild(li);
                 });
@@ -824,10 +837,31 @@
             deleteLinks(ids) { this.data.links = this.data.links.filter(l => !ids.includes(l.id)); this.saveState(); this.renderLinks(); this.renderCategories(); }
             toggleFav(id) { const link = this.data.links.find(l => l.id === id); if (link) { link.favorite = !link.favorite; this.saveState(); this.renderLinks(); } }
             
-            saveCategory(name) {
+            // 處理分類的新增與修改
+            saveCategory(name, id) {
                 if (!name.trim()) return;
-                this.data.categories.push({ id: Utils.generateId(), name });
-                this.saveState(); this.renderCategories(); this.showToast('分類建立成功', 'success');
+                
+                if (id) {
+                    // 修改
+                    const cat = this.data.categories.find(c => c.id === id);
+                    if (cat) {
+                        cat.name = name;
+                        this.showToast('分類已更新', 'success');
+                        
+                        // 若目前正在瀏覽該分類，同步更新標題
+                        if(this.state.filterType === 'category' && this.state.filterValue === id) {
+                            this.els.viewTitle.textContent = name;
+                        }
+                    }
+                } else {
+                    // 新增
+                    this.data.categories.push({ id: Utils.generateId(), name });
+                    this.showToast('分類建立成功', 'success');
+                }
+                
+                this.saveState(); 
+                this.renderCategories(); 
+                this.renderLinks(); // 重新渲染卡片，讓卡片上的分類名稱更新
             }
 
             deleteCategory(id) {
@@ -886,7 +920,7 @@
                 });
 
                 document.getElementById('btn-new-link').addEventListener('click', () => this.openLinkModal());
-                document.getElementById('btn-add-category').addEventListener('click', () => { this.els.formCat.reset(); this.els.modalCat.showModal(); });
+                document.getElementById('btn-add-category').addEventListener('click', () => this.openCatModal());
                 
                 this.els.formLink.addEventListener('submit', (e) => {
                     e.preventDefault();
@@ -898,9 +932,12 @@
                     this.els.modalLink.close();
                 });
 
+                // 修改：綁定分類表單的 Submit，傳入 id 區分新增或修改
                 this.els.formCat.addEventListener('submit', (e) => {
                     e.preventDefault();
-                    this.saveCategory(document.getElementById('cat-name').value);
+                    const name = document.getElementById('cat-name').value;
+                    const id = document.getElementById('cat-id-input').value;
+                    this.saveCategory(name, id);
                     this.els.modalCat.close();
                 });
 
@@ -967,6 +1004,21 @@
                     document.getElementById('link-category').value = this.state.filterType === 'category' ? this.state.filterValue : 'cat_default';
                 }
                 this.els.modalLink.showModal();
+            }
+
+            // 打開分類 Modal (支援新增與修改)
+            openCatModal(cat = null) {
+                this.els.formCat.reset();
+                const titleEl = document.getElementById('modal-cat-title');
+                if (cat) {
+                    titleEl.textContent = '修改分類名稱';
+                    document.getElementById('cat-id-input').value = cat.id;
+                    document.getElementById('cat-name').value = cat.name;
+                } else {
+                    titleEl.textContent = '新增分類';
+                    document.getElementById('cat-id-input').value = '';
+                }
+                this.els.modalCat.showModal();
             }
 
             openUrl(url, id) {
