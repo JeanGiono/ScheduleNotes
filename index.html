@@ -297,7 +297,7 @@
             .sidebar { 
                 position: fixed; left: 0; top: 0; bottom: 0; 
                 width: 85vw; max-width: 340px; 
-                transform: translateX(-100%); /* 確保不會裁切畫面 */
+                transform: translateX(-100%); /* 保證側邊欄動畫不會裁切畫面 */
                 box-shadow: var(--shadow-lg); 
             }
             .sidebar.open { transform: translateX(0); }
@@ -497,7 +497,6 @@
         </div>
     </dialog>
 
-    <!-- 分類管理 Modal (整合新增與修改) -->
     <dialog id="modal-category">
         <div class="modal-content">
             <div class="modal-header">
@@ -559,11 +558,12 @@
                 this.downloadBlob(blob, `裝潢點子_完整備份_${new Date().toISOString().slice(0,10)}.json`);
             }
 
-            exportToNotion() {
+            exportToNotionFile() {
                 const data = this.load();
                 if (!data.links || data.links.length === 0) return alert('沒有點子可匯出');
 
                 let mdContent = '# 裝潢點子庫\n\n';
+                // 為了讓 Notion 順利轉換表格，並維持超連結，我們建立標準 Markdown 表格
                 mdContent += '| 標題 | 網址 | 分類 | 標籤 | 靈感筆記 | 收藏 | 建立日期 |\n';
                 mdContent += '|---|---|---|---|---|:---:|---|\n';
 
@@ -575,8 +575,11 @@
                 data.links.forEach(link => {
                     const catName = data.categories.find(c => c.id === link.category)?.name || '未分類';
                     
+                    // 【核心修復】：將網址強制加上 [URL](URL) 格式，確保匯入 Notion 後能正常點擊。
                     const title = `[${escapeMD(link.title)}](${link.url})`; 
-                    const url = escapeMD(link.url);
+                    const urlStr = escapeMD(link.url);
+                    const url = `[${urlStr}](${link.url})`; 
+                    
                     const cat = escapeMD(catName);
                     const tags = escapeMD((link.tags || []).join(', '));
                     const desc = escapeMD(link.description);
@@ -590,11 +593,21 @@
                 this.downloadBlob(blob, `裝潢點子_Notion匯出_${new Date().toISOString().slice(0,10)}.md`);
             }
 
+            // 【修復核心】：解決 Webview / Safari 的隱藏元素點擊被阻擋問題
             downloadBlob(blob, filename) {
-                const url = URL.createObjectURL(blob);
+                const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = url; a.download = filename; a.click();
-                URL.revokeObjectURL(url);
+                a.style.display = 'none'; // 隱藏按鈕
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a); // 必須附加到 DOM 中，手機瀏覽器才允許觸發下載
+                a.click();
+                
+                // 確保觸發後再清理
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 200);
             }
         }
 
@@ -647,7 +660,6 @@
                     
                     li.querySelector('.nav-item-link').onclick = () => this.setFilter('category', cat.id, cat.name);
 
-                    // 如果不是預設分類，加入修改與刪除按鈕
                     if(cat.id !== 'cat_default') {
                         const actionDiv = document.createElement('div');
                         actionDiv.className = 'cat-actions';
@@ -861,7 +873,7 @@
                 
                 this.saveState(); 
                 this.renderCategories(); 
-                this.renderLinks(); // 重新渲染卡片，讓卡片上的分類名稱更新
+                this.renderLinks(); 
             }
 
             deleteCategory(id) {
@@ -920,7 +932,7 @@
                 });
 
                 document.getElementById('btn-new-link').addEventListener('click', () => this.openLinkModal());
-                document.getElementById('btn-add-category').addEventListener('click', () => this.openCatModal());
+                document.getElementById('btn-add-category').addEventListener('click', () => { this.els.formCat.reset(); this.els.modalCat.showModal(); });
                 
                 this.els.formLink.addEventListener('submit', (e) => {
                     e.preventDefault();
@@ -932,7 +944,6 @@
                     this.els.modalLink.close();
                 });
 
-                // 修改：綁定分類表單的 Submit，傳入 id 區分新增或修改
                 this.els.formCat.addEventListener('submit', (e) => {
                     e.preventDefault();
                     const name = document.getElementById('cat-name').value;
@@ -956,8 +967,19 @@
                     else { this.showToast('無法解析此網址格式', 'error'); }
                 });
 
-                document.getElementById('btn-export').addEventListener('click', () => this.storage.exportData());
-                document.getElementById('btn-export-notion').addEventListener('click', () => this.storage.exportToNotion());
+                // ==========================================
+                // 修正：綁定匯出按鈕並加上提示
+                // ==========================================
+                document.getElementById('btn-export-notion').addEventListener('click', () => {
+                    this.showToast('準備下載 Notion 備份檔...', 'info');
+                    this.storage.exportToNotionFile();
+                });
+                
+                document.getElementById('btn-export').addEventListener('click', () => {
+                    this.showToast('準備下載 JSON 備份檔...', 'info');
+                    this.storage.exportData();
+                });
+                
                 const fileInput = document.getElementById('file-import');
                 document.getElementById('btn-import').addEventListener('click', () => fileInput.click());
                 fileInput.addEventListener('change', (e) => {
@@ -1006,7 +1028,6 @@
                 this.els.modalLink.showModal();
             }
 
-            // 打開分類 Modal (支援新增與修改)
             openCatModal(cat = null) {
                 this.els.formCat.reset();
                 const titleEl = document.getElementById('modal-cat-title');
@@ -1062,9 +1083,9 @@
                 else if(type === 'error') icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--danger)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
                 else icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--accent-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
 
-                toast.innerHTML = `${icon} <span>${msg}</span>`;
+                toast.innerHTML = `${icon} <span style="font-size:0.9rem;">${msg}</span>`;
                 container.appendChild(toast);
-                setTimeout(() => toast.remove(), 3400);
+                setTimeout(() => toast.remove(), 3600); 
             }
         }
 
