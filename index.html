@@ -1,1095 +1,836 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="dark">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>裝潢點子</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        /* ================= CSS 變數與主題 ================= */
-        :root {
-            --bg-base: #f8fafc;
-            --bg-sidebar: #ffffff;
-            --bg-card: rgba(255, 255, 255, 0.85);
-            --bg-input: #f1f5f9;
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --accent-primary: #6366f1;
-            --accent-hover: #4f46e5;
-            --border-color: rgba(0, 0, 0, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.5);
-            --shadow-glow: 0 0 15px rgba(99, 102, 241, 0.2);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --danger: #ef4444;
-            --success: #10b981;
-            --warning: #f59e0b;
-        }
-
-        [data-theme="dark"] {
-            --bg-base: #0b0f19;
-            --bg-sidebar: rgba(15, 23, 42, 0.95);
-            --bg-card: rgba(30, 41, 59, 0.7);
-            --bg-input: rgba(15, 23, 42, 0.9);
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-muted: #475569;
-            --accent-primary: #818cf8;
-            --accent-hover: #6366f1;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.05);
-            --shadow-glow: 0 0 20px rgba(129, 140, 248, 0.15);
-        }
-
-        /* ================= 基礎重置與排版 ================= */
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: 'Inter', 'Noto Sans TC', sans-serif;
-            background-color: var(--bg-base); color: var(--text-primary);
-            transition: background-color 0.3s ease, color 0.3s ease;
-            overflow: hidden; display: flex;
-            height: 100vh; height: 100dvh;
-        }
-        
-        .glass {
-            background: var(--bg-card);
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-        }
-
-        ul { list-style: none; }
-        a { text-decoration: none; color: inherit; }
-        button, input, select, textarea { font-family: inherit; outline: none; border: none; background: none; color: inherit; }
-        button { cursor: pointer; transition: all 0.2s; }
-        svg { flex-shrink: 0; } 
-        
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
-
-        /* ================= 佈局 ================= */
-        #app { display: flex; width: 100%; height: 100%; position: relative; }
-
-        .sidebar-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-            z-index: 40; opacity: 0; transition: opacity 0.3s ease;
-        }
-
-        /* ----- Sidebar ----- */
-        .sidebar {
-            width: 280px; height: 100%;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            display: flex; flex-direction: column;
-            padding: max(1.5rem, env(safe-area-inset-top)) 1.5rem 1.5rem max(1.5rem, env(safe-area-inset-left));
-            z-index: 50; flex-shrink: 0;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-x: hidden; 
-        }
-
-        .logo-area {
-            display: flex; align-items: center; gap: 12px;
-            font-size: 1.4rem; font-weight: 700; color: var(--accent-primary);
-            margin-bottom: 2rem; padding-left: 4px;
-        }
-        .logo-area svg { width: 28px; height: 28px; fill: currentColor; }
-
-        .nav-menu { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-        
-        .nav-item {
-            display: flex; align-items: center; justify-content: space-between;
-            border-radius: 10px; transition: all 0.2s;
-        }
-        .nav-item-link {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 14px; flex: 1; cursor: pointer; min-width: 0;
-            color: var(--text-secondary); font-weight: 500; border-radius: 10px;
-        }
-        @media (hover: hover) { .nav-item-link:hover { background: var(--bg-input); color: var(--text-primary); } }
-        
-        .nav-item.active .nav-item-link { 
-            background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); font-weight: 600;
-        }
-        
-        /* 分類操作按鈕區域 (修改 & 刪除) */
-        .cat-actions { display: flex; align-items: center; gap: 2px; margin-right: 4px; flex-shrink: 0; }
-        .edit-cat-btn, .delete-cat-btn {
-            width: 32px; height: 32px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--text-muted); background: transparent; cursor: pointer;
-        }
-        @media (hover: hover) { 
-            .edit-cat-btn:hover { background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); }
-            .delete-cat-btn:hover { background: rgba(239, 68, 68, 0.15); color: var(--danger); } 
-        }
-
-        .nav-section-title {
-            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
-            color: var(--text-muted); font-weight: 600;
-            margin: 1.5rem 0 0.5rem 14px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .add-cat-btn { 
-            background: var(--bg-input); color: var(--text-primary); 
-            width: 28px; height: 28px; border-radius: 8px; 
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        .sidebar-footer {
-            margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-color);
-            display: flex; flex-direction: column; gap: 8px;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        .btn-icon-text {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 14px; border-radius: 8px;
-            font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;
-        }
-        @media (hover: hover) { .btn-icon-text:hover { background: var(--bg-input); color: var(--text-primary); } }
-        .btn-notion { color: var(--text-primary); background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); }
-
-        /* ----- Main Content ----- */
-        .main-content {
-            flex: 1; display: flex; flex-direction: column;
-            overflow: hidden; position: relative; width: 100%;
-        }
-
-        .header {
-            min-height: 70px; padding: max(1rem, env(safe-area-inset-top)) 2rem 1rem 2rem;
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid var(--border-color); gap: 1rem;
-            background: var(--bg-base); z-index: 10;
-        }
-
-        .header-left { display: flex; align-items: center; gap: 1rem; flex: 1; }
-        .mobile-menu-btn { 
-            display: none; background: var(--bg-input); color: var(--text-primary); 
-            width: 44px; height: 44px; border-radius: 10px;
-            align-items: center; justify-content: center; border: 1px solid var(--border-color);
-        }
-
-        .search-bar { position: relative; width: max(250px, 50%); max-width: 500px; }
-        .search-bar svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted); }
-        .search-bar input {
-            width: 100%; padding: 12px 16px 12px 44px; border-radius: 12px;
-            background: var(--bg-input); border: 1px solid var(--border-color);
-            color: var(--text-primary); font-size: 0.95rem; transition: all 0.3s;
-        }
-
-        .header-actions { display: flex; align-items: center; gap: 0.8rem; }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
-            color: white; padding: 12px 20px; border-radius: 10px; font-weight: 600;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); border: 1px solid rgba(255,255,255,0.1);
-        }
-        .theme-toggle {
-            width: 44px; height: 44px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border-color);
-        }
-
-        .content-scroll {
-            flex: 1; overflow-y: auto; overflow-x: hidden;
-            padding: 2rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom));
-        }
-
-        /* Dashboard Stats */
-        .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
-        .stat-card { padding: 1.5rem; border-radius: 16px; display: flex; align-items: center; gap: 1.2rem; cursor: pointer; transition: transform 0.2s;}
-        @media (hover: hover) { .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-glow); } }
-        .stat-icon { width: 52px; height: 52px; border-radius: 14px; background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); display: flex; align-items: center; justify-content: center; }
-        .stat-info h3 { font-size: 0.9rem; color: var(--text-secondary); font-weight: 500; }
-        .stat-info p { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin-top: 4px; line-height: 1; }
-
-        .quick-categories {
-            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 1.5rem;
-            scrollbar-width: none; -webkit-overflow-scrolling: touch;
-        }
-        .quick-categories::-webkit-scrollbar { display: none; }
-        .quick-cat-btn {
-            padding: 8px 16px; background: var(--bg-input); border: 1px solid var(--border-color);
-            border-radius: 20px; white-space: nowrap; font-size: 0.9rem; font-weight: 500;
-            color: var(--text-secondary); cursor: pointer; transition: all 0.2s; flex-shrink: 0;
-        }
-        .quick-cat-btn.active { background: var(--accent-primary); color: white; border-color: var(--accent-primary); }
-
-        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-        .view-title { font-size: 1.25rem; font-weight: 700; }
-        .toolbar-actions { display: flex; gap: 0.8rem; align-items: center; }
-        .select-filter { background: var(--bg-input); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 10px; color: var(--text-primary); }
-        .btn-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--bg-input); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); }
-        .btn-icon.active { background: rgba(99,102,241,0.15); color: var(--accent-primary); border-color: rgba(99,102,241,0.3); }
-
-        /* Cards Grid */
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; align-items: start; }
-        .link-card {
-            border-radius: 16px; padding: 1.5rem; position: relative; display: flex; flex-direction: column; gap: 12px;
-            cursor: pointer; border: 1px solid var(--glass-border); background: var(--bg-card); transition: transform 0.2s;
-        }
-        @media (hover: hover) { .link-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-glow); border-color: rgba(99, 102, 241, 0.4); } }
-        
-        .card-header { display: flex; align-items: flex-start; gap: 12px; }
-        .favicon { width: 36px; height: 36px; border-radius: 10px; background: var(--bg-input); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border-color); }
-        .favicon img { width: 100%; height: 100%; object-fit: cover; }
-        .card-title-area { flex: 1; min-width: 0; }
-        .card-title { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
-        .card-url { font-size: 0.8rem; color: var(--accent-primary); opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        .card-desc { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 1; min-height: 2.7rem; }
-        .card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-        .tag { font-size: 0.75rem; padding: 4px 10px; background: rgba(99, 102, 241, 0.1); color: var(--accent-primary); border-radius: 20px; font-weight: 500; }
-
-        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 14px; border-top: 1px solid var(--border-color); }
-        .card-date { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
-        
-        .clickable-category { color: var(--accent-primary); cursor: pointer; padding: 4px 0; font-weight: 600; }
-        .clickable-category:hover { text-decoration: underline; opacity: 0.8; }
-
-        .card-actions { display: flex; gap: 6px; }
-        .action-btn { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); background: var(--bg-input); }
-        .action-btn.fav.active { color: var(--warning); background: rgba(245, 158, 11, 0.1); }
-
-        /* Batch Mode */
-        .card-checkbox { position: absolute; top: 16px; right: 16px; width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--text-muted); appearance: none; cursor: pointer; display: none; z-index: 2; background: var(--bg-card); }
-        .card-checkbox:checked { background-color: var(--accent-primary); border-color: var(--accent-primary); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E"); background-size: 14px; background-position: center; background-repeat: no-repeat; }
-        .batch-mode .card-checkbox { display: block; }
-        .batch-mode .card-actions { display: none; }
-        .batch-mode .link-card.selected { border-color: var(--accent-primary); background: rgba(99, 102, 241, 0.05); }
-
-        .batch-action-bar {
-            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
-            background: var(--bg-sidebar); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            padding: 12px 24px; border-radius: 20px; border: 1px solid var(--glass-border);
-            display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-lg), var(--shadow-glow);
-            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100; width: max-content; max-width: 90vw;
-        }
-        .batch-action-bar.visible { bottom: max(30px, env(safe-area-inset-bottom)); }
-
-        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-muted); grid-column: 1 / -1; }
-        .empty-state svg { width: 72px; height: 72px; margin-bottom: 1.5rem; opacity: 0.5; color: var(--accent-primary); }
-
-        /* Modals */
-        dialog { margin: auto; border: none; background: transparent; padding: 0; outline: none; max-width: 500px; width: 92%; border-radius: 24px; }
-        dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-        .modal-content { background: var(--bg-sidebar); border: 1px solid var(--glass-border); border-radius: 24px; padding: 2rem; box-shadow: var(--shadow-lg); color: var(--text-primary); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .btn-close { background: var(--bg-input); color: var(--text-muted); font-size: 1.5rem; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .form-group { margin-bottom: 1.2rem; }
-        .form-group label { display: block; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
-        .form-control { width: 100%; padding: 14px 16px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 1rem; transition: all 0.2s; }
-        .form-control:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
-        textarea.form-control { resize: vertical; min-height: 100px; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
-        .btn-secondary { padding: 12px 20px; border-radius: 10px; background: var(--bg-input); color: var(--text-primary); font-weight: 600; border: 1px solid var(--border-color); }
-
-        /* Toasts */
-        #toast-container { position: fixed; bottom: max(24px, env(safe-area-inset-bottom)); right: 24px; left: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; pointer-events: none; align-items: flex-end; }
-        .toast { background: var(--bg-sidebar); border-left: 5px solid var(--accent-primary); color: var(--text-primary); padding: 14px 20px; border-radius: 12px; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px; min-width: 250px; pointer-events: auto; font-weight: 500; animation: slideInUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOut 0.4s ease 3s forwards; }
-        @keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(20px); visibility: hidden; } }
-
-        /* ================= RWD: Mobile Devices ================= */
-        @media (max-width: 768px) {
-            .sidebar { 
-                position: fixed; left: 0; top: 0; bottom: 0; 
-                width: 85vw; max-width: 340px; 
-                transform: translateX(-100%); /* 保證側邊欄動畫不會裁切畫面 */
-                box-shadow: var(--shadow-lg); 
-            }
-            .sidebar.open { transform: translateX(0); }
-            .sidebar-overlay.active { display: block; opacity: 1; }
-            
-            .header { padding: max(1rem, env(safe-area-inset-top)) 1.2rem 1rem 1.2rem; flex-wrap: wrap; }
-            .header-left { width: 100%; justify-content: space-between; }
-            .mobile-menu-btn { display: flex; }
-            .search-bar { width: 100%; max-width: none; order: 3; margin-top: 0.5rem; }
-            
-            .content-scroll { padding: 1.2rem; }
-            .dashboard-stats { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-            .stat-card { padding: 1.2rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-            .stat-icon { width: 44px; height: 44px; }
-            
-            .cards-grid { grid-template-columns: 1fr; gap: 1rem; }
-            .toolbar { flex-direction: column; align-items: flex-start; }
-            .toolbar-actions { width: 100%; justify-content: space-between; }
-            
-            .modal-content { padding: 1.5rem; }
-            #toast-container { right: 16px; left: 16px; align-items: center; }
-            .toast { width: 100%; justify-content: center; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>15.86坪老屋翻新 - 雙重視角工程進度管制系統</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    /* Custom Scrollbar for Gantt Chart */
+    .gantt-scrollbar::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+    .gantt-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    .gantt-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .gantt-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <div id="app">
-        <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="logo-area">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-                裝潢點子
-            </div>
-
-            <ul class="nav-menu" id="nav-menu">
-                <li class="nav-item active" data-filter="all">
-                    <div class="nav-item-link">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                        <span>所有點子</span>
-                    </div>
-                </li>
-                <li class="nav-item" data-filter="favorites">
-                    <div class="nav-item-link">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                        <span>⭐ 我的收藏</span>
-                    </div>
-                </li>
-                <li class="nav-item" data-filter="recent">
-                    <div class="nav-item-link">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        <span>最近瀏覽</span>
-                    </div>
-                </li>
-
-                <div class="nav-section-title">
-                    分類夾
-                    <button class="add-cat-btn" id="btn-add-category" title="新增分類">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    </button>
-                </div>
-                <div id="category-list" style="display: flex; flex-direction: column; gap: 4px;"></div>
-            </ul>
-
-            <div class="sidebar-footer">
-                <button class="btn-icon-text btn-notion" id="btn-export-notion">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                    匯出至 Notion (.md)
-                </button>
-                <button class="btn-icon-text" id="btn-export">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    完整備份 (JSON)
-                </button>
-                <button class="btn-icon-text" id="btn-import">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                    資料還原
-                </button>
-                <input type="file" id="file-import" accept=".json" style="display: none;">
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="header">
-                <div class="header-left">
-                    <button class="mobile-menu-btn" id="btn-mobile-menu">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                    </button>
-                    <div class="header-actions">
-                        <button class="theme-toggle" id="btn-theme">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"></svg>
-                        </button>
-                        <button class="btn-primary" id="btn-new-link">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            <span>新增點子</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="search-bar">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" id="search-input" placeholder="搜尋裝潢風格、家具、網址...">
-                </div>
-            </header>
-
-            <div class="content-scroll" id="content-area">
-                <section class="dashboard-stats" id="dashboard-stats">
-                    <div class="stat-card glass" id="stat-card-total">
-                        <div class="stat-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg></div>
-                        <div class="stat-info"><h3>總點子數</h3><p id="stat-total">0</p></div>
-                    </div>
-                    <div class="stat-card glass" id="stat-card-cats">
-                        <div class="stat-icon" style="color: var(--success); background: rgba(16, 185, 129, 0.1);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></div>
-                        <div class="stat-info"><h3>分類夾 (點擊查看)</h3><p id="stat-cats">0</p></div>
-                    </div>
-                    <div class="stat-card glass" id="stat-card-favs">
-                        <div class="stat-icon" style="color: var(--warning); background: rgba(245, 158, 11, 0.1);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div>
-                        <div class="stat-info"><h3>已星標</h3><p id="stat-favs">0</p></div>
-                    </div>
-                </section>
-
-                <div class="quick-categories" id="quick-categories"></div>
-
-                <section class="toolbar">
-                    <h2 class="view-title" id="view-title">所有點子</h2>
-                    <div class="toolbar-actions">
-                        <select class="select-filter" id="sort-select">
-                            <option value="newest">最新加入</option>
-                            <option value="oldest">最早加入</option>
-                            <option value="az">名稱 A-Z</option>
-                        </select>
-                        <button class="btn-icon" id="btn-batch-mode" title="批次管理">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                        </button>
-                    </div>
-                </section>
-
-                <div class="cards-grid" id="links-grid"></div>
-            </div>
-            
-            <div class="batch-action-bar" id="batch-action-bar">
-                <span style="font-weight: 600; font-size: 0.95rem;">已選 <span id="batch-count" style="color:var(--accent-primary);">0</span> 項</span>
-                <div style="display:flex; gap: 8px;">
-                    <button class="btn-secondary" id="btn-batch-cancel" style="padding: 8px 16px;">取消</button>
-                    <button class="btn-primary" id="btn-batch-delete" style="background: var(--danger); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); padding: 8px 16px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        <span>刪除</span>
-                    </button>
-                </div>
-            </div>
-        </main>
+  <!-- Header -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-amber-500 text-slate-900 p-2 rounded-lg font-black text-xl shadow-inner">
+          工
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-wider flex items-center gap-2">
+            15.86坪老屋翻新工程管制系統 
+            <span class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-normal">資深設計師 x 統包大叔聯手版</span>
+          </h1>
+          <p class="text-xs text-slate-400">專注「現場魔鬼細節」與「小坪數高容錯動線」的工進管制工具</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnExport" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-lg flex items-center gap-2 transition shadow-sm">
+          <i data-lucide="download" class="w-4 h-4"></i> 匯出管制表 (CSV)
+        </button>
+        <button id="btnReset" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium px-3 py-2 rounded-lg flex items-center gap-2 transition border border-slate-700">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i> 重設資料
+        </button>
+      </div>
     </div>
+  </header>
 
-    <!-- Modals -->
-    <dialog id="modal-link">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modal-link-title">新增裝潢點子</h3>
-                <button class="btn-close" id="btn-close-link" type="button">×</button>
-            </div>
-            <form id="form-link">
-                <input type="hidden" id="link-id">
-                <div class="form-group">
-                    <label>網址 (URL) *</label>
-                    <div style="display:flex; gap:8px;">
-                        <input type="url" class="form-control" id="link-url" required placeholder="https://..." autocomplete="off">
-                        <button type="button" class="btn-secondary" id="btn-auto-fetch" title="嘗試解析網址" style="padding: 0 14px; flex-shrink:0;">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>標題名稱 *</label>
-                    <input type="text" class="form-control" id="link-title" required placeholder="例如：北歐風客廳設計參考" autocomplete="off">
-                </div>
-                <div class="form-group" style="display:flex; gap:12px;">
-                    <div style="flex:1;">
-                        <label>分類</label>
-                        <select class="form-control" id="link-category"></select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>標籤 (Tags)</label>
-                    <input type="text" class="form-control" id="link-tags" placeholder="輸入標籤，用逗號分隔 (例: 系統櫃, 燈光)" autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label>靈感筆記</label>
-                    <textarea class="form-control" id="link-desc" placeholder="記錄下這個網頁最吸引你的特點..."></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" id="btn-cancel-link">取消</button>
-                    <button type="submit" class="btn-primary">儲存點子</button>
-                </div>
-            </form>
+  <!-- Main Content Layout -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+    <!-- Left Panel: Project Info & Devil Details Check (4 Columns) -->
+    <section class="lg:col-span-4 flex flex-col gap-6">
+      
+      <!-- Project Summary -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+        <div class="flex justify-between items-start mb-4">
+          <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="info" class="text-amber-500 w-5 h-5"></i> 案場基本資訊
+          </h2>
+          <span class="bg-blue-50 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-100">施工中</span>
         </div>
-    </dialog>
-
-    <dialog id="modal-category">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modal-cat-title">新增分類</h3>
-                <button class="btn-close" id="btn-close-category" type="button">×</button>
-            </div>
-            <form id="form-category">
-                <input type="hidden" id="cat-id-input">
-                <div class="form-group">
-                    <label>分類名稱 *</label>
-                    <input type="text" class="form-control" id="cat-name" required placeholder="例如：廚房設計" autocomplete="off">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" id="btn-cancel-category">取消</button>
-                    <button type="submit" class="btn-primary">儲存</button>
-                </div>
-            </form>
+        <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+          <div class="bg-slate-50 p-3 rounded-xl">
+            <span class="text-xs text-slate-500 block">權狀坪數</span>
+            <strong class="text-slate-800 text-base">15.86 坪</strong>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl">
+            <span class="text-xs text-slate-500 block">室內實坪</span>
+            <strong class="text-slate-800 text-base">約 11~13 坪</strong>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl">
+            <span class="text-xs text-slate-500 block">預計工期</span>
+            <strong class="text-slate-800 text-base">8 + 1 週</strong>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl">
+            <span class="text-xs text-slate-500 block">開工日期</span>
+            <strong class="text-slate-800 text-base">2026 / 07 / 01</strong>
+          </div>
         </div>
-    </dialog>
 
-    <div id="toast-container"></div>
+        <!-- Overall Progress Bar -->
+        <div class="mt-4 pt-4 border-t border-slate-100">
+          <div class="flex justify-between text-xs font-semibold text-slate-600 mb-2">
+            <span>全案工程總進度</span>
+            <span id="txtOverallProgress">35%</span>
+          </div>
+          <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+            <div id="barOverallProgress" class="bg-gradient-to-r from-amber-500 to-emerald-500 h-full transition-all duration-500" style="width: 35%"></div>
+          </div>
+        </div>
+      </div>
 
-    <script>
-        const Utils = {
-            generateId: () => '_' + Math.random().toString(36).substr(2, 9),
-            getFaviconUrl: (url) => {
-                try { return `https://s2.googleusercontent.com/s2/favicons?domain=${new URL(url).hostname}&sz=128`; } 
-                catch { return null; }
-            },
-            extractDomainName: (url) => {
-                try {
-                    let host = new URL(url).hostname.replace('www.', '');
-                    return host.split('.')[0].charAt(0).toUpperCase() + host.split('.')[0].slice(1);
-                } catch { return ''; }
-            },
-            formatDate: (ts) => {
-                const d = new Date(ts);
-                return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
-            },
-            escapeHTML: (str) => {
-                if(!str) return '';
-                return String(str).replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
-            }
+      <!-- Devil Details Checklist (The Core Value) -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex-1 flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="shield-alert" class="text-rose-500 w-5 h-5"></i> 工地魔鬼細節檢核表
+          </h2>
+          <span class="text-xs text-slate-400">雙重視角提示</span>
+        </div>
+        
+        <p class="text-xs text-slate-500 mb-4">這 6 項是最容易卡關、造成工期延宕或鄰損糾紛的關鍵。請務必在對應週數前勾選確認！</p>
+
+        <!-- Checklist Container -->
+        <div class="space-y-3 flex-1 overflow-y-auto max-h-[380px] pr-1 gantt-scrollbar" id="checklistContainer">
+          <!-- Item 1 -->
+          <div class="p-3 rounded-xl border border-slate-100 bg-amber-50/50 hover:bg-amber-50 transition flex gap-3 items-start relative overflow-hidden group">
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-500"></div>
+            <input type="checkbox" id="chk_devil_1" class="mt-1 w-4 h-4 rounded text-amber-600 focus:ring-amber-500 border-slate-300 cursor-pointer chk-devil">
+            <div class="flex-1">
+              <label for="chk_devil_1" class="text-sm font-bold text-slate-800 block cursor-pointer">【超前部署】鋁窗與大門開工前量尺</label>
+              <span class="text-xs text-slate-500 block mt-1">要在 6 月底前下單！確保 Week 2 泥作進場能立刻立框灌漿填縫。</span>
+              <div class="mt-2 flex gap-2">
+                <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-medium">Week 0-1 必辦</span>
+                <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">材料提早</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 2 -->
+          <div class="p-3 rounded-xl border border-slate-100 bg-rose-50/30 hover:bg-rose-50/50 transition flex gap-3 items-start relative overflow-hidden group">
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-rose-500"></div>
+            <input type="checkbox" id="chk_devil_2" class="mt-1 w-4 h-4 rounded text-rose-600 focus:ring-rose-500 border-slate-300 cursor-pointer chk-devil">
+            <div class="flex-1">
+              <label for="chk_devil_2" class="text-sm font-bold text-slate-800 block cursor-pointer">【浴室移位】糞管定位與24h試水</label>
+              <span class="text-xs text-slate-500 block mt-1">Week 1 拆除完畢立即檢視糞管坡度；Week 4 防水後必須蓄水至門檻做 24 小時閉水試驗。</span>
+              <div class="mt-2 flex gap-2">
+                <span class="text-[10px] bg-rose-100 text-rose-800 px-2 py-0.5 rounded-md font-medium">Week 4 必辦</span>
+                <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">鄰損防範</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 3 -->
+          <div class="p-3 rounded-xl border border-slate-100 bg-blue-50/30 hover:bg-blue-50/50 transition flex gap-3 items-start relative overflow-hidden group">
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
+            <input type="checkbox" id="chk_devil_3" class="mt-1 w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer chk-devil">
+            <div class="flex-1">
+              <label for="chk_devil_3" class="text-sm font-bold text-slate-800 block cursor-pointer">【廚具定位】210cm 精密電器迴路</label>
+              <span class="text-xs text-slate-500 block mt-1">小坪數切菜區僅 70cm。水電進場前（Week 3）廚具水電放樣圖必須完全定案，差 5cm 插座就報廢。</span>
+              <div class="mt-2 flex gap-2">
+                <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-md font-medium">Week 3 前定案</span>
+                <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">設備圖面</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 4 -->
+          <div class="p-3 rounded-xl border border-slate-100 bg-emerald-50/30 hover:bg-emerald-50/50 transition flex gap-3 items-start relative overflow-hidden group">
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
+            <input type="checkbox" id="chk_devil_4" class="mt-1 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer chk-devil">
+            <div class="flex-1">
+              <label for="chk_devil_4" class="text-sm font-bold text-slate-800 block cursor-pointer">【地坪對接】超耐磨與 SPC 順平打底</label>
+              <span class="text-xs text-slate-500 block mt-1">木地板與 SPC 厚度差達 4-5mm。Week 4 泥作打底時須明確告知分界，或由後續木作夾板打底順平。</span>
+              <div class="mt-2 flex gap-2">
+                <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-medium">Week 4 泥作溝通</span>
+                <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">高低差防範</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 5 -->
+          <div class="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-100 transition flex gap-3 items-start relative overflow-hidden group">
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-slate-400"></div>
+            <input type="checkbox" id="chk_devil_5" class="mt-1 w-4 h-4 rounded text-slate-600 focus:ring-slate-500 border-slate-300 cursor-pointer chk-devil">
+            <div class="flex-1">
+              <label for="chk_devil_5" class="text-sm font-bold text-slate-800 block cursor-pointer">【公關消防】鄰鄰告解與大門防火證明</label>
+              <span class="text-xs text-slate-500 block mt-1">開工前一週親送小禮物給上下左右鄰居。大門下單時務必索取「防火時效/阻熱性測試報告」，報竣工必備。</span>
+              <div class="mt-2 flex gap-2">
+                <span class="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded-md font-medium">Week 1 前辦理</span>
+                <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">合法申報</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 6 -->
+          <div class="p-3 rounded-xl border border-slate-100 bg-indigo-50/30 hover:bg-indigo-50/50 transition flex gap-3 items-start relative overflow-hidden group">
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500"></div>
+            <input type="checkbox" id="chk_devil_6" class="mt-1 w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer chk-devil">
+            <div class="flex-1">
+              <label for="chk_devil_6" class="text-sm font-bold text-slate-800 block cursor-pointer">【冷氣配管】型號與室外機電源定案</label>
+              <span class="text-xs text-slate-500 block mt-1">冷媒銅管厚度與排水位置因型號而異。Week 3 前電器設備型號必須定案，避免 Week 5 木作包管時無法收尾。</span>
+              <div class="mt-2 flex gap-2">
+                <span class="text-[10px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-md font-medium">Week 3 水電放樣</span>
+                <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">家電採購</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Right Panel: Interactive Gantt Chart & Controls (8 Columns) -->
+    <section class="lg:col-span-8 flex flex-col gap-6">
+      
+      <!-- Live Notification / Warning Board -->
+      <div id="warningBoard" class="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-3 shadow-sm">
+        <i data-lucide="alert-triangle" class="text-amber-600 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+        <div>
+          <h3 class="text-sm font-bold text-amber-900">小坪數工種重疊警戒與動線優化指引</h3>
+          <p id="warningText" class="text-xs text-amber-800 mt-1">一切運作正常！目前工種動線安排合宜，未發生工班擁擠衝突。</p>
+        </div>
+      </div>
+
+      <!-- Gantt Chart Wrapper Card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex-1 flex flex-col min-h-[500px]">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="calendar" class="text-blue-500 w-5 h-5"></i> 雙週排程與工進甘特圖
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">可直接在下方列表中更新各工種進度與施工狀態</p>
+          </div>
+          
+          <!-- View / Filter Toggles -->
+          <div class="flex items-center gap-2 self-end sm:self-auto">
+            <span class="text-xs text-slate-500">篩選狀態：</span>
+            <select id="statusFilter" class="bg-slate-50 border border-slate-200 text-xs rounded-lg px-2.5 py-1.5 text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+              <option value="all">顯示全部工種</option>
+              <option value="not_started">未開始</option>
+              <option value="ongoing">進行中</option>
+              <option value="completed">已完工</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Gantt View Layout -->
+        <div class="flex-1 overflow-x-auto gantt-scrollbar pb-4">
+          <div class="min-w-[800px]">
+            
+            <!-- Gantt Header (Weeks 1 to 9) -->
+            <div class="grid grid-cols-12 gap-1 border-b border-slate-100 pb-3 mb-3 text-center text-xs font-bold text-slate-600">
+              <div class="col-span-3 text-left pl-2">工程項目 / 負責工種</div>
+              <div class="col-span-1 bg-slate-50 py-1 rounded">W1</div>
+              <div class="col-span-1 bg-slate-50 py-1 rounded">W2</div>
+              <div class="col-span-1 bg-slate-50 py-1 rounded">W3</div>
+              <div class="col-span-1 bg-slate-50 py-1 rounded">W4</div>
+              <div class="col-span-1 bg-slate-50 py-1 rounded">W5</div>
+              <div class="col-span-1 bg-slate-50 py-1 rounded">W6</div>
+              <div class="col-span-1 bg-slate-50 py-1 rounded">W7</div>
+              <div class="col-span-1 bg-slate-50 py-1 rounded">W8</div>
+              <div class="col-span-1 bg-amber-50 text-amber-800 py-1 rounded">W9</div>
+            </div>
+
+            <!-- Gantt Body Rows (Dynamic Generation) -->
+            <div id="ganttRowsContainer" class="space-y-3">
+              <!-- JS will inject rows here -->
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="mt-4 pt-4 border-t border-slate-100 flex flex-wrap justify-between items-center gap-4 text-xs">
+          <div class="flex items-center gap-4 text-slate-500">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-300 inline-block"></span> 未開始</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> 進行中</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> 已完工</span>
+          </div>
+          <p class="text-slate-400 italic">⚠️ 註：Week 9 屬緩衝驗收交屋週，不安排密集施工作業。</p>
+        </div>
+
+      </div>
+
+      <!-- Quick Budgeting Check & Payment Nodes -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
+          <i data-lucide="dollar-sign" class="text-emerald-500 w-5 h-5"></i> 統包收付節點與工進比對
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          
+          <div class="p-3.5 rounded-xl border border-emerald-100 bg-emerald-50/20">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs text-slate-500 font-bold">1. 簽約/開工款 (30%)</span>
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">已付</span>
+            </div>
+            <p class="text-sm font-bold text-slate-800">開工進場前</p>
+            <span class="text-[10px] text-slate-400 block mt-1">對應進度：Week 1 拆除動工</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs text-slate-500 font-bold">2. 工程中期款 (30%)</span>
+              <span id="payNode2" class="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold">待撥</span>
+            </div>
+            <p class="text-sm font-bold text-slate-800">泥作防水完成</p>
+            <span class="text-[10px] text-slate-400 block mt-1 font-medium">對應進度：Week 4 試水無滲漏</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs text-slate-500 font-bold">3. 工程後期款 (30%)</span>
+              <span id="payNode3" class="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold">待撥</span>
+            </div>
+            <p class="text-sm font-bold text-slate-800">木作與油漆完工</p>
+            <span class="text-[10px] text-slate-400 block mt-1 font-medium">對應進度：Week 7 雙地板鋪設前</span>
+          </div>
+
+          <div class="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs text-slate-500 font-bold">4. 驗收尾款 (10%)</span>
+              <span id="payNode4" class="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold">待撥</span>
+            </div>
+            <p class="text-sm font-bold text-slate-800">細清及驗收完成</p>
+            <span class="text-[10px] text-slate-400 block mt-1">對應進度：Week 9 順利交屋</span>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Detail Edit Modal -->
+  <div id="editModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-all">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-100 w-full max-w-md p-6 m-4 relative animate-in fade-in zoom-in-95 duration-200">
+      <button id="btnCloseModal" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600 transition">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      
+      <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="edit-3" class="text-blue-500 w-5 h-5"></i> 編輯工種細部設定
+      </h3>
+      
+      <form id="editForm" class="space-y-4">
+        <input type="hidden" id="editTaskId">
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">工程項目名稱</label>
+          <input type="text" id="editTaskName" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none" readonly>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">主要負責工種</label>
+          <input type="text" id="editTaskTrade" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">起始週數</label>
+            <select id="editStartWeek" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+              <option value="1">Week 1</option>
+              <option value="2">Week 2</option>
+              <option value="3">Week 3</option>
+              <option value="4">Week 4</option>
+              <option value="5">Week 5</option>
+              <option value="6">Week 6</option>
+              <option value="7">Week 7</option>
+              <option value="8">Week 8</option>
+              <option value="9">Week 9</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">持續週數</label>
+            <select id="editDuration" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+              <option value="1">1 週</option>
+              <option value="2">2 週</option>
+              <option value="3">3 週</option>
+              <option value="4">4 週</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">目前施工進度 (%)</label>
+          <div class="flex items-center gap-3">
+            <input type="range" id="editProgress" min="0" max="100" step="5" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500">
+            <span id="editProgressValue" class="text-sm font-bold text-slate-700 min-w-[40px] text-right">0%</span>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex justify-end gap-2">
+          <button type="button" id="btnCancelModal" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg transition">
+            取消
+          </button>
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-md">
+            儲存變更
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-500 text-center py-4 text-xs border-t border-slate-800 mt-auto">
+    <div class="max-w-7xl mx-auto px-4">
+      <p>© 2026 15.86坪老屋精準裝修專案管制系統 - 雙重設計與統包視角實踐</p>
+    </div>
+  </footer>
+
+  <!-- App Business Logic & Script -->
+  <script>
+    // Initial standard 8+1 weeks project dataset
+    const defaultTasks = [
+      { id: 't1', name: '拆除工程、清運、舊鋁窗大門卸除', trade: '拆除工班', startWeek: 1, duration: 1, progress: 100 },
+      { id: 't2', name: '鋁窗/大門框進場立框、砌磚新牆', trade: '泥作工班 / 鋁窗大門商', startWeek: 2, duration: 1, progress: 100 },
+      { id: 't3', name: '全室水電配管線（廚衛、專用迴路）', trade: '水電工班', startWeek: 2, duration: 2, progress: 40 },
+      { id: 't4', name: '泥作打底、防水工程與24h蓄水測試', trade: '泥作工班', startWeek: 4, duration: 1, progress: 0 },
+      { id: 't5', name: '泥作貼磚、木作天花板骨架、冷氣配管', trade: '泥作 / 木作 / 冷氣商', startWeek: 5, duration: 1, progress: 0 },
+      { id: 't6', name: '木作封矽酸鈣板與造型收尾', trade: '木作工班', startWeek: 5, duration: 2, progress: 0 },
+      { id: 't7', name: '油漆批土研磨與細緻面漆', trade: '油漆工班', startWeek: 6, duration: 2, progress: 0 },
+      { id: 't8', name: '雙地板鋪設（先超耐磨、後SPC）', trade: '地板工班', startWeek: 7, duration: 1, progress: 0 },
+      { id: 't9', name: '廚具/衛浴設備安裝、燈具面板掛上', trade: '廚具 / 衛浴 / 水電裝修', startWeek: 8, duration: 1, progress: 0 },
+      { id: 't10', name: '裝潢細清、三方自主與陪同驗收交屋', trade: '細清工班 / 統包 / 設計師', startWeek: 9, duration: 1, progress: 0 }
+    ];
+
+    let tasks = [];
+    let checkedDevils = {};
+
+    // DOM Elements
+    const ganttRowsContainer = document.getElementById('ganttRowsContainer');
+    const txtOverallProgress = document.getElementById('txtOverallProgress');
+    const barOverallProgress = document.getElementById('barOverallProgress');
+    const statusFilter = document.getElementById('statusFilter');
+    const warningText = document.getElementById('warningText');
+    const warningBoard = document.getElementById('warningBoard');
+    const checklistContainer = document.getElementById('checklistContainer');
+    
+    // Payments Elements
+    const payNode2 = document.getElementById('payNode2');
+    const payNode3 = document.getElementById('payNode3');
+    const payNode4 = document.getElementById('payNode4');
+
+    // Modal Elements
+    const editModal = document.getElementById('editModal');
+    const editForm = document.getElementById('editForm');
+    const editTaskId = document.getElementById('editTaskId');
+    const editTaskName = document.getElementById('editTaskName');
+    const editTaskTrade = document.getElementById('editTaskTrade');
+    const editStartWeek = document.getElementById('editStartWeek');
+    const editDuration = document.getElementById('editDuration');
+    const editProgress = document.getElementById('editProgress');
+    const editProgressValue = document.getElementById('editProgressValue');
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    const btnCancelModal = document.getElementById('btnCancelModal');
+
+    const btnExport = document.getElementById('btnExport');
+    const btnReset = document.getElementById('btnReset');
+
+    // Initialize Local Storage or default
+    function initData() {
+      const storedTasks = localStorage.getItem('interior_tasks');
+      const storedDevils = localStorage.getItem('interior_devils');
+      
+      if (storedTasks) {
+        tasks = JSON.parse(storedTasks);
+      } else {
+        tasks = JSON.parse(JSON.stringify(defaultTasks));
+      }
+
+      if (storedDevils) {
+        checkedDevils = JSON.parse(storedDevils);
+      } else {
+        checkedDevils = {
+          chk_devil_1: true, // Let's pre-check the first one as it is Week 0/1 setup
+          chk_devil_2: false,
+          chk_devil_3: false,
+          chk_devil_4: false,
+          chk_devil_5: false,
+          chk_devil_6: false
         };
+      }
+      
+      saveData();
+      renderChecklist();
+      renderGantt();
+      calculateOverallProgress();
+      lucide.createIcons();
+    }
 
-        class StorageService {
-            constructor() { this.namespace = 'zhuanghuang_ideas_data'; this.init(); }
-            init() {
-                if (!localStorage.getItem(this.namespace)) {
-                    this.save({ links: [], categories: [{ id: 'cat_default', name: '預設分類' }], settings: { theme: 'dark', sort: 'newest' } });
-                }
+    function saveData() {
+      localStorage.setItem('interior_tasks', JSON.stringify(tasks));
+      localStorage.setItem('interior_devils', JSON.stringify(checkedDevils));
+    }
+
+    // Render Checklist with dynamic states
+    function renderChecklist() {
+      const checkboxes = document.querySelectorAll('.chk-devil');
+      checkboxes.forEach(chk => {
+        const id = chk.id;
+        chk.checked = !!checkedDevils[id];
+        
+        // Handle visual strike-through or opacity
+        const wrapper = chk.closest('.p-3');
+        if (chk.checked) {
+          wrapper.classList.add('opacity-70');
+          wrapper.classList.remove('bg-amber-50/50', 'bg-rose-50/30', 'bg-blue-50/30', 'bg-emerald-50/30', 'bg-indigo-50/30');
+          wrapper.classList.add('bg-slate-50');
+        } else {
+          wrapper.classList.remove('opacity-70', 'bg-slate-50');
+          // Restore color coding
+          if (id === 'chk_devil_1') wrapper.classList.add('bg-amber-50/50');
+          if (id === 'chk_devil_2') wrapper.classList.add('bg-rose-50/30');
+          if (id === 'chk_devil_3') wrapper.classList.add('bg-blue-50/30');
+          if (id === 'chk_devil_4') wrapper.classList.add('bg-emerald-50/30');
+          if (id === 'chk_devil_6') wrapper.classList.add('bg-indigo-50/30');
+        }
+      });
+    }
+
+    // Main Gantt rendering engine
+    function renderGantt() {
+      ganttRowsContainer.innerHTML = '';
+      const filterValue = statusFilter.value;
+
+      tasks.forEach(task => {
+        // Status Check
+        let status = 'not_started';
+        if (task.progress > 0 && task.progress < 100) status = 'ongoing';
+        if (task.progress === 100) status = 'completed';
+
+        // Filter Match
+        if (filterValue !== 'all' && status !== filterValue) return;
+
+        const row = document.createElement('div');
+        row.className = 'grid grid-cols-12 gap-1 items-center p-2 rounded-xl hover:bg-slate-50 transition border border-transparent hover:border-slate-100 group';
+        
+        // Text Column (Weeks 1 to 9 spans remain)
+        let colHtml = `
+          <div class="col-span-3 pr-2 flex flex-col justify-center min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-slate-800 truncate" title="${task.name}">${task.name}</span>
+              <button onclick="openEditModal('${task.id}')" class="opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 transition p-0.5 rounded">
+                <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+            <div class="flex items-center justify-between text-[10px] text-slate-400 mt-1">
+              <span class="truncate">工種: ${task.trade}</span>
+              <span class="font-bold text-slate-600 shrink-0">${task.progress}%</span>
+            </div>
+          </div>
+        `;
+
+        // Weeks block logic (W1 to W9)
+        const endWeek = task.startWeek + task.duration - 1;
+        for (let w = 1; w <= 9; w++) {
+          const isCurrentTaskWeek = w >= task.startWeek && w <= endWeek;
+          
+          if (isCurrentTaskWeek) {
+            // Calculate slice of progress for this week
+            let colorClass = 'bg-slate-300'; // Default not started but planned
+            let barWidth = 'w-0';
+
+            if (task.progress === 100) {
+              colorClass = 'bg-emerald-500 text-white';
+              barWidth = 'w-full';
+            } else if (task.progress > 0) {
+              colorClass = 'bg-blue-500 text-white';
+              barWidth = `style="width: ${task.progress}%"`;
             }
-            load() { return JSON.parse(localStorage.getItem(this.namespace)); }
-            save(data) { localStorage.setItem(this.namespace, JSON.stringify(data)); }
-            
-            exportData() {
-                const data = this.load();
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                this.downloadBlob(blob, `裝潢點子_完整備份_${new Date().toISOString().slice(0,10)}.json`);
-            }
 
-            exportToNotionFile() {
-                const data = this.load();
-                if (!data.links || data.links.length === 0) return alert('沒有點子可匯出');
-
-                let mdContent = '# 裝潢點子庫\n\n';
-                // 為了讓 Notion 順利轉換表格，並維持超連結，我們建立標準 Markdown 表格
-                mdContent += '| 標題 | 網址 | 分類 | 標籤 | 靈感筆記 | 收藏 | 建立日期 |\n';
-                mdContent += '|---|---|---|---|---|:---:|---|\n';
-
-                const escapeMD = (str) => {
-                    if(!str) return '';
-                    return String(str).replace(/\|/g, '&#124;').replace(/\n/g, '<br>');
-                };
-
-                data.links.forEach(link => {
-                    const catName = data.categories.find(c => c.id === link.category)?.name || '未分類';
-                    
-                    // 【核心修復】：將網址強制加上 [URL](URL) 格式，確保匯入 Notion 後能正常點擊。
-                    const title = `[${escapeMD(link.title)}](${link.url})`; 
-                    const urlStr = escapeMD(link.url);
-                    const url = `[${urlStr}](${link.url})`; 
-                    
-                    const cat = escapeMD(catName);
-                    const tags = escapeMD((link.tags || []).join(', '));
-                    const desc = escapeMD(link.description);
-                    const fav = link.favorite ? '⭐' : '';
-                    const date = new Date(link.createdAt).toLocaleDateString('zh-TW');
-
-                    mdContent += `| ${title} | ${url} | ${cat} | ${tags} | ${desc} | ${fav} | ${date} |\n`;
-                });
-
-                const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8;' });
-                this.downloadBlob(blob, `裝潢點子_Notion匯出_${new Date().toISOString().slice(0,10)}.md`);
-            }
-
-            // 【修復核心】：解決 Webview / Safari 的隱藏元素點擊被阻擋問題
-            downloadBlob(blob, filename) {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none'; // 隱藏按鈕
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a); // 必須附加到 DOM 中，手機瀏覽器才允許觸發下載
-                a.click();
-                
-                // 確保觸發後再清理
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                }, 200);
-            }
+            colHtml += `
+              <div class="col-span-1 h-8 relative bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center group-hover:shadow-inner transition">
+                <!-- Highlight Active Construction Strip -->
+                <div class="absolute inset-y-0 left-0 ${task.progress === 100 ? 'bg-emerald-500' : 'bg-blue-500'} transition-all duration-300" ${task.progress > 0 && task.progress < 100 ? barWidth : 'style="width:100%; opacity: 0.15;"'}></div>
+                ${task.progress > 0 && task.progress < 100 ? `<div class="absolute inset-y-0 left-0 bg-blue-500 opacity-20 w-full"></div>` : ''}
+                <span class="relative z-10 text-[9px] font-bold ${task.progress === 100 ? 'text-white' : 'text-slate-700'}">${task.progress}%</span>
+              </div>
+            `;
+          } else {
+            colHtml += `
+              <div class="col-span-1 h-8 bg-slate-50/40 rounded-lg border border-dashed border-slate-100 flex items-center justify-center">
+                <span class="text-[9px] text-slate-300">-</span>
+              </div>
+            `;
+          }
         }
 
-        class App {
-            constructor() {
-                this.storage = new StorageService();
-                this.data = this.storage.load();
-                this.state = { filterType: 'all', filterValue: null, searchQuery: '', batchMode: false, selectedIds: new Set(), draggedId: null };
-                
-                this.els = {
-                    grid: document.getElementById('links-grid'), catList: document.getElementById('category-list'),
-                    quickCats: document.getElementById('quick-categories'), viewTitle: document.getElementById('view-title'),
-                    searchInput: document.getElementById('search-input'), sortSelect: document.getElementById('sort-select'),
-                    batchBtn: document.getElementById('btn-batch-mode'), batchBar: document.getElementById('batch-action-bar'),
-                    themeBtn: document.getElementById('btn-theme'), sidebar: document.getElementById('sidebar'),
-                    sidebarOverlay: document.getElementById('sidebar-overlay'),
-                    statTotal: document.getElementById('stat-total'), statCats: document.getElementById('stat-cats'), statFavs: document.getElementById('stat-favs'),
-                    modalLink: document.getElementById('modal-link'), formLink: document.getElementById('form-link'),
-                    modalCat: document.getElementById('modal-category'), formCat: document.getElementById('form-category')
-                };
-                this.init();
+        row.innerHTML = colHtml;
+        ganttRowsContainer.appendChild(row);
+      });
+
+      lucide.createIcons();
+    }
+
+    // Core Calculation for Progress, Multi-Trade Conflicts & Payments Nodes
+    function calculateOverallProgress() {
+      if (tasks.length === 0) return;
+
+      const totalProgress = tasks.reduce((sum, t) => sum + t.progress, 0);
+      const overall = Math.round(totalProgress / tasks.length);
+
+      txtOverallProgress.innerText = `${overall}%`;
+      barOverallProgress.style.width = `${overall}%`;
+
+      // Update payment nodes based on real-world milestones
+      // Midterm Payment (30%): Week 4 Mud/Waterproofing finished (Task 4 is 100%)
+      const task4 = tasks.find(t => t.id === 't4');
+      if (task4 && task4.progress === 100) {
+        payNode2.innerText = '可撥款';
+        payNode2.className = 'text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold';
+      } else {
+        payNode2.innerText = '待撥';
+        payNode2.className = 'text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold';
+      }
+
+      // Late Payment (30%): Woodwork & Paint finished (Task 6 & Task 7 are 100%)
+      const task6 = tasks.find(t => t.id === 't6');
+      const task7 = tasks.find(t => t.id === 't7');
+      if (task6 && task6.progress === 100 && task7 && task7.progress === 100) {
+        payNode3.innerText = '可撥款';
+        payNode3.className = 'text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold';
+      } else {
+        payNode3.innerText = '待撥';
+        payNode3.className = 'text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold';
+      }
+
+      // Final Payment (10%): Acceptance finished (Task 10 is 100%)
+      const task10 = tasks.find(t => t.id === 't10');
+      if (task10 && task10.progress === 100) {
+        payNode4.innerText = '可撥款';
+        payNode4.className = 'text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold';
+      } else {
+        payNode4.innerText = '待撥';
+        payNode4.className = 'text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold';
+      }
+
+      // Detect trade overlapping conflicts (especially important in <= 13 ping spaces)
+      detectTradeConflicts();
+    }
+
+    function detectTradeConflicts() {
+      // Find how many unique trades are active in each week
+      const weeklyTrades = {};
+      for (let w = 1; w <= 9; w++) {
+        weeklyTrades[w] = [];
+      }
+
+      tasks.forEach(t => {
+        // Only count ongoing or active tasks
+        if (t.progress < 100) {
+          const endWeek = t.startWeek + t.duration - 1;
+          for (let w = t.startWeek; w <= endWeek; w++) {
+            if (w <= 9) {
+              weeklyTrades[w].push(t);
             }
-
-            init() {
-                this.applyTheme(this.data.settings.theme || 'dark');
-                this.els.sortSelect.value = this.data.settings.sort || 'newest';
-                this.bindGlobalEvents();
-                this.renderCategories();
-                this.updateDashboard();
-                this.renderLinks();
-            }
-
-            saveState() { this.storage.save(this.data); this.updateDashboard(); }
-
-            renderCategories() {
-                this.els.catList.innerHTML = '';
-                this.data.categories.forEach(cat => {
-                    const count = this.data.links.filter(l => l.category === cat.id).length;
-                    const isActive = this.state.filterType === 'category' && this.state.filterValue === cat.id;
-                    const li = document.createElement('li');
-                    li.className = `nav-item ${isActive ? 'active' : ''}`;
-                    
-                    li.innerHTML = `
-                        <div class="nav-item-link">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                            <span style="flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${Utils.escapeHTML(cat.name)}</span>
-                            <span style="font-size: 0.75rem; background: var(--bg-card); padding: 2px 8px; border-radius: 12px; font-weight:600;">${count}</span>
-                        </div>
-                    `;
-                    
-                    li.querySelector('.nav-item-link').onclick = () => this.setFilter('category', cat.id, cat.name);
-
-                    if(cat.id !== 'cat_default') {
-                        const actionDiv = document.createElement('div');
-                        actionDiv.className = 'cat-actions';
-
-                        const editBtn = document.createElement('button');
-                        editBtn.className = 'edit-cat-btn';
-                        editBtn.title = '修改名稱';
-                        editBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
-                        editBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            this.openCatModal(cat);
-                        };
-
-                        const delBtn = document.createElement('button');
-                        delBtn.className = 'delete-cat-btn';
-                        delBtn.title = '刪除分類';
-                        delBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-                        delBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            if(confirm(`確定刪除分類「${cat.name}」？\n此分類下的點子將自動移至預設分類。`)) this.deleteCategory(cat.id);
-                        };
-
-                        actionDiv.appendChild(editBtn);
-                        actionDiv.appendChild(delBtn);
-                        li.appendChild(actionDiv);
-                    }
-                    this.els.catList.appendChild(li);
-                });
-
-                this.els.quickCats.innerHTML = `<button class="quick-cat-btn ${this.state.filterType === 'all' ? 'active' : ''}" data-type="all">所有點子</button>`;
-                this.data.categories.forEach(cat => {
-                    const isActive = this.state.filterType === 'category' && this.state.filterValue === cat.id;
-                    this.els.quickCats.innerHTML += `<button class="quick-cat-btn ${isActive ? 'active' : ''}" data-type="category" data-val="${cat.id}" data-name="${Utils.escapeHTML(cat.name)}">${Utils.escapeHTML(cat.name)}</button>`;
-                });
-                
-                this.els.quickCats.querySelectorAll('.quick-cat-btn').forEach(btn => {
-                    btn.onclick = () => {
-                        if(btn.dataset.type === 'all') this.setFilter('all');
-                        else this.setFilter('category', btn.dataset.val, btn.dataset.name);
-                    };
-                });
-
-                document.getElementById('link-category').innerHTML = this.data.categories.map(c => `<option value="${c.id}">${Utils.escapeHTML(c.name)}</option>`).join('');
-            }
-
-            updateDashboard() {
-                this.els.statTotal.textContent = this.data.links.length;
-                this.els.statCats.textContent = this.data.categories.length;
-                this.els.statFavs.textContent = this.data.links.filter(l => l.favorite).length;
-            }
-
-            getFilteredLinks() {
-                let links = [...this.data.links];
-                const q = this.state.searchQuery.toLowerCase();
-                if (q) links = links.filter(l => (l.title && l.title.toLowerCase().includes(q)) || (l.description && l.description.toLowerCase().includes(q)) || (l.url && l.url.toLowerCase().includes(q)) || (l.tags && l.tags.some(t => t.toLowerCase().includes(q))));
-                
-                if (this.state.filterType === 'category') links = links.filter(l => l.category === this.state.filterValue);
-                else if (this.state.filterType === 'favorites') links = links.filter(l => l.favorite);
-                else if (this.state.filterType === 'recent') {
-                    const recent = JSON.parse(localStorage.getItem('zhuanghuang_recent') || '[]');
-                    return links.filter(l => recent.includes(l.id)).sort((a, b) => recent.indexOf(a.id) - recent.indexOf(b.id));
-                } else if (this.state.filterType === 'tag') links = links.filter(l => l.tags.includes(this.state.filterValue));
-
-                const sort = this.els.sortSelect.value;
-                if (sort === 'newest') links.sort((a, b) => b.createdAt - a.createdAt);
-                if (sort === 'oldest') links.sort((a, b) => a.createdAt - b.createdAt);
-                if (sort === 'az') links.sort((a, b) => a.title.localeCompare(b.title));
-                return links;
-            }
-
-            renderLinks() {
-                this.els.grid.innerHTML = '';
-                const links = this.getFilteredLinks();
-
-                if (links.length === 0) {
-                    this.els.grid.innerHTML = `<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><h3>這裡還沒有點子</h3><p>點擊右上角「新增點子」開始收集裝潢靈感吧！</p></div>`;
-                    return;
-                }
-
-                const frag = document.createDocumentFragment();
-                links.forEach(link => {
-                    const card = document.createElement('div');
-                    const isSelected = this.state.selectedIds.has(link.id);
-                    card.className = `link-card ${this.state.batchMode && isSelected ? 'selected' : ''}`;
-                    card.dataset.id = link.id;
-                    if(!this.state.batchMode && window.innerWidth > 768) card.draggable = true;
-
-                    const defaultIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>`;
-                    const iconUrl = Utils.getFaviconUrl(link.url);
-                    const imgTag = iconUrl ? `<img src="${iconUrl}" onerror="this.outerHTML='${defaultIcon}'" alt="">` : defaultIcon;
-                    const tagsHtml = (link.tags || []).map(t => `<span class="tag" data-tag="${t}">${Utils.escapeHTML(t)}</span>`).join('');
-                    const catName = this.data.categories.find(c => c.id === link.category)?.name || '未分類';
-
-                    card.innerHTML = `
-                        <input type="checkbox" class="card-checkbox" ${isSelected ? 'checked' : ''}>
-                        <div class="card-header">
-                            <div class="favicon">${imgTag}</div>
-                            <div class="card-title-area">
-                                <div class="card-title" title="${Utils.escapeHTML(link.title)}">${Utils.escapeHTML(link.title)}</div>
-                                <div class="card-url" title="${Utils.escapeHTML(link.url)}">${Utils.escapeHTML(link.url)}</div>
-                            </div>
-                        </div>
-                        ${link.description ? `<div class="card-desc">${Utils.escapeHTML(link.description)}</div>` : '<div style="flex-grow:1"></div>'}
-                        ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
-                        <div class="card-footer">
-                            <span class="card-date clickable-category" data-cat="${link.category}" data-catname="${Utils.escapeHTML(catName)}">📁 ${Utils.escapeHTML(catName)}</span>
-                            <div class="card-actions">
-                                <button class="action-btn fav ${link.favorite ? 'active' : ''}" data-action="fav">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${link.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                                </button>
-                                <button class="action-btn" data-action="edit">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-
-                    card.addEventListener('click', (e) => {
-                        if (this.state.batchMode) {
-                            const cb = card.querySelector('.card-checkbox');
-                            if(e.target !== cb) cb.checked = !cb.checked;
-                            this.toggleBatchSelect(link.id, cb.checked);
-                            return;
-                        }
-                        
-                        const actionBtn = e.target.closest('.action-btn');
-                        if (actionBtn) {
-                            e.stopPropagation();
-                            if (actionBtn.dataset.action === 'fav') this.toggleFav(link.id);
-                            if (actionBtn.dataset.action === 'edit') this.openLinkModal(link);
-                            return;
-                        }
-
-                        const catLink = e.target.closest('.clickable-category');
-                        if (catLink) {
-                            e.stopPropagation();
-                            this.setFilter('category', catLink.dataset.cat, catLink.dataset.catname);
-                            return;
-                        }
-
-                        const tagEl = e.target.closest('.tag');
-                        if (tagEl) { e.stopPropagation(); this.setFilter('tag', tagEl.dataset.tag, `#${tagEl.dataset.tag}`); return; }
-
-                        this.openUrl(link.url, link.id);
-                    });
-
-                    card.addEventListener('dragstart', (e) => {
-                        if(this.state.batchMode || window.innerWidth <= 768) { e.preventDefault(); return; }
-                        this.state.draggedId = link.id; e.dataTransfer.effectAllowed = 'move';
-                        setTimeout(() => card.style.opacity = '0.4', 0);
-                    });
-                    card.addEventListener('dragover', (e) => {
-                        e.preventDefault();
-                        if(this.state.draggedId && this.state.draggedId !== link.id) card.style.borderColor = 'var(--accent-primary)';
-                    });
-                    card.addEventListener('dragleave', () => card.style.borderColor = 'var(--glass-border)');
-                    card.addEventListener('drop', (e) => {
-                        e.preventDefault(); card.style.borderColor = 'var(--glass-border)';
-                        if (this.state.draggedId && this.state.draggedId !== link.id) this.reorderLinks(this.state.draggedId, link.id);
-                    });
-                    card.addEventListener('dragend', () => { card.style.opacity = '1'; this.state.draggedId = null; });
-
-                    frag.appendChild(card);
-                });
-                this.els.grid.appendChild(frag);
-            }
-
-            saveLink(data) {
-                const isNew = !data.id;
-                const obj = {
-                    id: data.id || Utils.generateId(), title: data.title, url: data.url, description: data.description,
-                    category: data.category || 'cat_default', tags: data.tags ? data.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-                    favorite: data.favorite || false, createdAt: data.createdAt || Date.now()
-                };
-
-                if (isNew) { this.data.links.unshift(obj); this.showToast('點子已儲存', 'success'); } 
-                else {
-                    const idx = this.data.links.findIndex(l => l.id === data.id);
-                    if (idx > -1) {
-                        obj.createdAt = this.data.links[idx].createdAt; obj.favorite = this.data.links[idx].favorite;
-                        this.data.links[idx] = obj; this.showToast('點子已更新', 'success');
-                    }
-                }
-                this.saveState(); this.renderLinks(); this.renderCategories();
-            }
-
-            deleteLinks(ids) { this.data.links = this.data.links.filter(l => !ids.includes(l.id)); this.saveState(); this.renderLinks(); this.renderCategories(); }
-            toggleFav(id) { const link = this.data.links.find(l => l.id === id); if (link) { link.favorite = !link.favorite; this.saveState(); this.renderLinks(); } }
-            
-            // 處理分類的新增與修改
-            saveCategory(name, id) {
-                if (!name.trim()) return;
-                
-                if (id) {
-                    // 修改
-                    const cat = this.data.categories.find(c => c.id === id);
-                    if (cat) {
-                        cat.name = name;
-                        this.showToast('分類已更新', 'success');
-                        
-                        // 若目前正在瀏覽該分類，同步更新標題
-                        if(this.state.filterType === 'category' && this.state.filterValue === id) {
-                            this.els.viewTitle.textContent = name;
-                        }
-                    }
-                } else {
-                    // 新增
-                    this.data.categories.push({ id: Utils.generateId(), name });
-                    this.showToast('分類建立成功', 'success');
-                }
-                
-                this.saveState(); 
-                this.renderCategories(); 
-                this.renderLinks(); 
-            }
-
-            deleteCategory(id) {
-                this.data.categories = this.data.categories.filter(c => c.id !== id);
-                this.data.links.forEach(l => { if (l.category === id) l.category = 'cat_default'; });
-                if(this.state.filterType === 'category' && this.state.filterValue === id) this.setFilter('all');
-                this.saveState(); this.renderCategories(); this.renderLinks();
-            }
-
-            reorderLinks(draggedId, targetId) {
-                const arr = this.data.links;
-                const dIdx = arr.findIndex(l => l.id === draggedId);
-                const tIdx = arr.findIndex(l => l.id === targetId);
-                if(dIdx > -1 && tIdx > -1) {
-                    const item = arr.splice(dIdx, 1)[0];
-                    arr.splice(tIdx, 0, item);
-                    this.saveState(); this.renderLinks();
-                }
-            }
-
-            bindGlobalEvents() {
-                document.querySelectorAll('#nav-menu .nav-item[data-filter]').forEach(el => {
-                    el.querySelector('.nav-item-link').onclick = () => {
-                        const f = el.dataset.filter;
-                        this.setFilter(f, null, f==='favorites' ? '⭐ 我的收藏' : f==='recent' ? '最近瀏覽' : '所有點子');
-                    };
-                });
-
-                let searchTimeout;
-                this.els.searchInput.addEventListener('input', (e) => {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => { this.state.searchQuery = e.target.value; this.renderLinks(); }, 300);
-                });
-
-                this.els.sortSelect.addEventListener('change', (e) => { this.data.settings.sort = e.target.value; this.saveState(); this.renderLinks(); });
-
-                this.els.themeBtn.addEventListener('click', () => {
-                    const newTheme = this.data.settings.theme === 'dark' ? 'light' : 'dark';
-                    this.data.settings.theme = newTheme; this.saveState(); this.applyTheme(newTheme);
-                });
-
-                document.getElementById('stat-card-cats').addEventListener('click', () => {
-                    if (window.innerWidth <= 768) { this.els.sidebar.classList.add('open'); this.els.sidebarOverlay.classList.add('active'); }
-                    document.getElementById('category-list').scrollIntoView({behavior: 'smooth', block: 'center'});
-                });
-                document.getElementById('stat-card-favs').addEventListener('click', () => this.setFilter('favorites', null, '⭐ 我的收藏'));
-
-                this.els.batchBtn.addEventListener('click', () => this.toggleBatchMode());
-                document.getElementById('btn-batch-cancel').addEventListener('click', () => this.toggleBatchMode(false));
-                document.getElementById('btn-batch-delete').addEventListener('click', () => {
-                    if(this.state.selectedIds.size === 0) return;
-                    if(confirm(`確定要刪除選取的 ${this.state.selectedIds.size} 個點子嗎？`)) {
-                        this.deleteLinks(Array.from(this.state.selectedIds));
-                        this.toggleBatchMode(false); this.showToast('已刪除所選項', 'success');
-                    }
-                });
-
-                document.getElementById('btn-new-link').addEventListener('click', () => this.openLinkModal());
-                document.getElementById('btn-add-category').addEventListener('click', () => { this.els.formCat.reset(); this.els.modalCat.showModal(); });
-                
-                this.els.formLink.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.saveLink({
-                        id: document.getElementById('link-id').value, title: document.getElementById('link-title').value,
-                        url: document.getElementById('link-url').value, category: document.getElementById('link-category').value,
-                        tags: document.getElementById('link-tags').value, description: document.getElementById('link-desc').value
-                    });
-                    this.els.modalLink.close();
-                });
-
-                this.els.formCat.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const name = document.getElementById('cat-name').value;
-                    const id = document.getElementById('cat-id-input').value;
-                    this.saveCategory(name, id);
-                    this.els.modalCat.close();
-                });
-
-                ['btn-close-link', 'btn-cancel-link', 'btn-close-category', 'btn-cancel-category'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if(el) el.addEventListener('click', (e) => e.target.closest('dialog').close());
-                });
-
-                document.getElementById('btn-auto-fetch').addEventListener('click', () => {
-                    const url = document.getElementById('link-url').value;
-                    const titleEl = document.getElementById('link-title');
-                    if(!url) return this.showToast('請先輸入網址', 'warning');
-                    const domainName = Utils.extractDomainName(url);
-                    if(domainName && !titleEl.value) { titleEl.value = domainName; this.showToast('已自動帶入網域名稱'); } 
-                    else if (titleEl.value) { this.showToast('標題已有內容'); } 
-                    else { this.showToast('無法解析此網址格式', 'error'); }
-                });
-
-                // ==========================================
-                // 修正：綁定匯出按鈕並加上提示
-                // ==========================================
-                document.getElementById('btn-export-notion').addEventListener('click', () => {
-                    this.showToast('準備下載 Notion 備份檔...', 'info');
-                    this.storage.exportToNotionFile();
-                });
-                
-                document.getElementById('btn-export').addEventListener('click', () => {
-                    this.showToast('準備下載 JSON 備份檔...', 'info');
-                    this.storage.exportData();
-                });
-                
-                const fileInput = document.getElementById('file-import');
-                document.getElementById('btn-import').addEventListener('click', () => fileInput.click());
-                fileInput.addEventListener('change', (e) => {
-                    const file = e.target.files[0]; if(!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        try {
-                            const parsed = JSON.parse(ev.target.result);
-                            if(parsed && parsed.links && parsed.categories) {
-                                this.data = parsed; this.saveState(); this.init(); this.showToast('資料還原成功', 'success');
-                            } else throw new Error();
-                        } catch(err) { this.showToast('檔案格式不正確', 'error'); }
-                        fileInput.value = '';
-                    };
-                    reader.readAsText(file);
-                });
-
-                document.getElementById('btn-mobile-menu').addEventListener('click', () => { this.els.sidebar.classList.add('open'); this.els.sidebarOverlay.classList.add('active'); });
-                this.els.sidebarOverlay.addEventListener('click', () => { this.els.sidebar.classList.remove('open'); this.els.sidebarOverlay.classList.remove('active'); });
-            }
-
-            setFilter(type, value = null, title = '') {
-                this.state.filterType = type; this.state.filterValue = value;
-                this.els.viewTitle.textContent = title || (type === 'all' ? '所有點子' : value);
-                
-                this.renderCategories(); 
-
-                this.state.searchQuery = ''; this.els.searchInput.value = '';
-                this.els.sidebar.classList.remove('open'); this.els.sidebarOverlay.classList.remove('active');
-                this.renderLinks();
-            }
-
-            openLinkModal(data = null) {
-                this.els.formLink.reset();
-                const titleEl = document.getElementById('modal-link-title');
-                if (data) {
-                    titleEl.textContent = '編輯裝潢點子';
-                    document.getElementById('link-id').value = data.id; document.getElementById('link-url').value = data.url;
-                    document.getElementById('link-title').value = data.title; document.getElementById('link-category').value = data.category;
-                    document.getElementById('link-tags').value = (data.tags || []).join(', '); document.getElementById('link-desc').value = data.description || '';
-                } else {
-                    titleEl.textContent = '新增裝潢點子';
-                    document.getElementById('link-id').value = '';
-                    document.getElementById('link-category').value = this.state.filterType === 'category' ? this.state.filterValue : 'cat_default';
-                }
-                this.els.modalLink.showModal();
-            }
-
-            openCatModal(cat = null) {
-                this.els.formCat.reset();
-                const titleEl = document.getElementById('modal-cat-title');
-                if (cat) {
-                    titleEl.textContent = '修改分類名稱';
-                    document.getElementById('cat-id-input').value = cat.id;
-                    document.getElementById('cat-name').value = cat.name;
-                } else {
-                    titleEl.textContent = '新增分類';
-                    document.getElementById('cat-id-input').value = '';
-                }
-                this.els.modalCat.showModal();
-            }
-
-            openUrl(url, id) {
-                let recent = JSON.parse(localStorage.getItem('zhuanghuang_recent') || '[]');
-                recent = [id, ...recent.filter(vid => vid !== id)].slice(0, 20);
-                localStorage.setItem('zhuanghuang_recent', JSON.stringify(recent));
-                window.open(url, '_blank', 'noopener,noreferrer');
-            }
-
-            toggleBatchMode(force) {
-                this.state.batchMode = force !== undefined ? force : !this.state.batchMode;
-                this.state.selectedIds.clear();
-                if (this.state.batchMode) {
-                    this.els.grid.classList.add('batch-mode'); this.els.batchBtn.classList.add('active'); this.els.batchBar.classList.add('visible'); document.getElementById('batch-count').textContent = '0';
-                } else {
-                    this.els.grid.classList.remove('batch-mode'); this.els.batchBtn.classList.remove('active'); this.els.batchBar.classList.remove('visible');
-                    document.querySelectorAll('.card-checkbox').forEach(cb => cb.checked = false); document.querySelectorAll('.link-card.selected').forEach(c => c.classList.remove('selected'));
-                }
-            }
-
-            toggleBatchSelect(id, isSelected) {
-                if(isSelected) this.state.selectedIds.add(id); else this.state.selectedIds.delete(id);
-                const card = document.querySelector(`.link-card[data-id="${id}"]`);
-                if(card) { if(isSelected) card.classList.add('selected'); else card.classList.remove('selected'); }
-                document.getElementById('batch-count').textContent = this.state.selectedIds.size;
-            }
-
-            applyTheme(theme) {
-                document.documentElement.setAttribute('data-theme', theme);
-                const icon = this.els.themeBtn.querySelector('svg');
-                if(theme === 'dark') icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
-                else icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
-            }
-
-            showToast(msg, type = 'info') {
-                const container = document.getElementById('toast-container');
-                const toast = document.createElement('div');
-                toast.className = `toast ${type}`;
-                let icon = '';
-                if(type === 'success') icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-                else if(type === 'error') icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--danger)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
-                else icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--accent-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
-
-                toast.innerHTML = `${icon} <span style="font-size:0.9rem;">${msg}</span>`;
-                container.appendChild(toast);
-                setTimeout(() => toast.remove(), 3600); 
-            }
+          }
         }
+      });
 
-        document.addEventListener('DOMContentLoaded', () => { window.app = new App(); });
-    </script>
+      // Find weeks with high overlap
+      let conflictWeek = 0;
+      let conflictTasks = [];
+      for (let w = 1; w <= 9; w++) {
+        if (weeklyTrades[w].length >= 3) { // 3 or more concurrent trades in 11 pings is dangerous
+          conflictWeek = w;
+          conflictTasks = weeklyTrades[w];
+          break;
+        }
+      }
+
+      if (conflictWeek > 0) {
+        warningBoard.className = 'bg-rose-50 border border-rose-200 p-4 rounded-2xl flex items-start gap-3 shadow-sm';
+        warningText.innerHTML = `
+          <strong class="text-rose-900 block font-bold mb-0.5">⚠️ 工地擁擠預警：Week ${conflictWeek} 出現工種疊打！</strong>
+          現場同時有 <span class="underline font-bold">${conflictTasks.map(t => t.trade.split(' ')[0]).join('、')}</span> 進場施工。
+          11坪室內實際空間極小，重疊施工會降低油漆與木作細緻度。建議進行動線微調，拆除與水電退場後再讓木作進場。
+        `;
+      } else {
+        // Check if important devils are unchecked when they are near
+        const upcomingDevil = checkUpcomingDevils();
+        if (upcomingDevil) {
+          warningBoard.className = 'bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-3 shadow-sm';
+          warningText.innerHTML = `
+            <strong class="text-amber-900 block font-bold mb-0.5">💡 統包現場提醒：</strong>
+            ${upcomingDevil.message}
+          `;
+        } else {
+          warningBoard.className = 'bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex items-start gap-3 shadow-sm';
+          warningText.innerHTML = `
+            <strong class="text-emerald-900 block font-bold mb-0.5">✅ 工種與細節協調良好</strong>
+            目前未偵測到工種重疊，且核心魔鬼細節均已超前部署。維持此節奏可保證 8 週準時清交。
+          `;
+        }
+      }
+    }
+
+    function checkUpcomingDevils() {
+      // Logic to suggest checking specific items based on undone items
+      if (!checkedDevils['chk_devil_1']) {
+        return { message: "「鋁窗與大門開工前量尺」尚未勾選確認！請確保在開工首日即完成尺寸套量，以免泥作卡關。" };
+      }
+      if (!checkedDevils['chk_devil_3']) {
+        return { message: "水電放樣前「210cm 廚具精密電器迴路」插座圖面必須定案，避免後續修改敲牆。" };
+      }
+      if (!checkedDevils['chk_devil_2']) {
+        return { message: "泥作進行中，浴室變更門位後的「24小時蓄水試水」必須落實，防止發生樓下鄰損糾紛。" };
+      }
+      if (!checkedDevils['chk_devil_4']) {
+        return { message: "「地板厚度與順平打底」需及早跟泥作或木作地板師傅確認，防止銜接面有高低差。" };
+      }
+      return null;
+    }
+
+    // Modal Control
+    window.openEditModal = function(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+
+      editTaskId.value = task.id;
+      editTaskName.value = task.name;
+      editTaskTrade.value = task.trade;
+      editStartWeek.value = task.startWeek;
+      editDuration.value = task.duration;
+      editProgress.value = task.progress;
+      editProgressValue.innerText = `${task.progress}%`;
+
+      editModal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      editModal.classList.add('hidden');
+    }
+
+    // Form submission
+    editForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = editTaskId.value;
+      const task = tasks.find(t => t.id === id);
+      
+      if (task) {
+        task.trade = editTaskTrade.value;
+        task.startWeek = parseInt(editStartWeek.value);
+        task.duration = parseInt(editDuration.value);
+        task.progress = parseInt(editProgress.value);
+
+        saveData();
+        renderGantt();
+        calculateOverallProgress();
+        closeModal();
+      }
+    });
+
+    // Update real-time range label
+    editProgress.addEventListener('input', (e) => {
+      editProgressValue.innerText = `${e.target.value}%`;
+    });
+
+    // Event listeners
+    statusFilter.addEventListener('change', renderGantt);
+    btnCloseModal.addEventListener('click', closeModal);
+    btnCancelModal.addEventListener('click', closeModal);
+
+    // Dynamic checkboxes listeners
+    document.addEventListener('change', (e) => {
+      if (e.target.classList.contains('chk-devil')) {
+        const id = e.target.id;
+        checkedDevils[id] = e.target.checked;
+        saveData();
+        renderChecklist();
+        calculateOverallProgress();
+      }
+    });
+
+    // Reset Action
+    btnReset.addEventListener('click', () => {
+      if (confirm('確定要將工期與檢核表還原至最初規劃狀態嗎？將會覆蓋當前所有變更。')) {
+        localStorage.removeItem('interior_tasks');
+        localStorage.removeItem('interior_devils');
+        initData();
+      }
+    });
+
+    // CSV Export Logic (Excel compatible)
+    btnExport.addEventListener('click', () => {
+      let csvContent = "\uFEFF"; // UTF-8 BOM for Excel Chinese compatibility
+      
+      // Metadata
+      csvContent += "15.86坪老屋翻新工程進度工作管制與細節確認表\n";
+      csvContent += `導出時間,${new Date().toLocaleDateString()}\n\n`;
+
+      // Header for tasks
+      csvContent += "工程項目,負責工種,起始週,持續時長(週),當前進度(%),狀態\n";
+      tasks.forEach(t => {
+        let status = '未開始';
+        if (t.progress > 0 && t.progress < 100) status = '進行中';
+        if (t.progress === 100) status = '已完工';
+        
+        // Clean comma in name for CSV safety
+        const cleanName = t.name.replace(/,/g, '，');
+        const cleanTrade = t.trade.replace(/,/g, '，');
+        
+        csvContent += `"${cleanName}","${cleanTrade}",Week ${t.startWeek},${t.duration}週,${t.progress}%,${status}\n`;
+      });
+
+      csvContent += "\n工地核心魔鬼細節與確認狀態\n";
+      csvContent += "檢核細節項目,目前確認狀態,實戰解法指引\n";
+      
+      const devilNotes = [
+        { name: "鋁窗與大門開工前量尺", chk: checkedDevils['chk_devil_1'], desc: "要在 6 月底前下單！確保 Week 2 泥作進場能立刻立框灌漿填縫。" },
+        { name: "浴室變更門位定位與24h試水", chk: checkedDevils['chk_devil_2'], desc: "Week 1 拆除完畢立即檢視糞管坡度；Week 4 防水後必須蓄水做 24 小時閉水試驗。" },
+        { name: "210cm 廚房精密電器迴路", chk: checkedDevils['chk_devil_3'], desc: "水電進場前（Week 3）廚具水電放樣圖必須完全定案，差 5cm 插座即報廢。" },
+        { name: "超耐磨與 SPC 順平打底", chk: checkedDevils['chk_devil_4'], desc: "兩種地板厚度差達 4-5mm。Week 4 泥作打底時須明確告知分界與高度落差防範。" },
+        { name: "公關消防與大門防火證明", chk: checkedDevils['chk_devil_5'], desc: "開工前一週送禮拜訪鄰居。大門廠商需提供防火測試報告，報竣工必備。" },
+        { name: "冷氣型號與室外機電源定位", chk: checkedDevils['chk_devil_6'], desc: "Week 3 決定好型號，利於後續冷媒配管與 Week 5 木作包管。 " }
+      ];
+
+      devilNotes.forEach(d => {
+        csvContent += `"${d.name}",${d.chk ? '已確認完成' : '⚠️ 尚未確認'},"${d.desc.replace(/,/g, '，')}"\n`;
+      });
+
+      // Downloader trigger
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `15.86坪老屋工程管制表_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // Start App
+    window.onload = () => {
+      initData();
+    };
+  </script>
 </body>
 </html>
